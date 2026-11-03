@@ -10,124 +10,276 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+  </style>
 </head>
 
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-md sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
-      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('browse')">
-        <img src="/static/logo.png" alt="PICT Campus Marketplace Logo" class="w-10 h-10 object-contain rounded-xl bg-white/10 p-0.5 shadow-md border border-white/20">
+<body class="bg-slate-50/80 text-slate-800 min-h-screen flex flex-col justify-between antialiased">
+  
+  <!-- Modern Clean Glassmorphism Header (Matching Blue Brand Identity) -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center space-x-3 cursor-pointer group" onclick="switchTab('browse')">
+        <div class="w-10 h-10 rounded-xl overflow-hidden bg-white shadow-xs border border-slate-200/70 p-0.5 group-hover:shadow-md transition">
+          <img src="/static/logo.png" alt="PICT Marketplace Logo" class="w-full h-full object-contain">
+        </div>
         <div>
-          <h1 class="text-xl font-bold tracking-tight">PICT Campus Marketplace</h1>
-          <p class="text-xs text-blue-200">Seniors &rarr; Juniors P2P Study Material Hub (Powered by Sarvam AI)</p>
+          <div class="flex items-center gap-2">
+            <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900">PICT <span class="text-blue-600">Marketplace</span></span>
+            <span class="hidden md:inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/70">CAMPUS P2P</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">Seniors &rarr; Juniors Study Hub &bull; SPPU Syllabus</p>
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
+      <!-- Navigation & Action Buttons (Single Row, No Wrap) -->
+      <div class="flex items-center space-x-2 sm:space-x-2.5">
+        
+        <!-- Browse Tab Button -->
         <button onclick="switchTab('browse')" id="tab-browse-btn"
-          class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30">
-          <i class="fa-solid fa-book-open mr-1.5"></i> Browse Listings
+          class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-blue-50 text-blue-700 border border-blue-200/60 shadow-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-book-open text-blue-600 text-xs sm:text-sm"></i>
+          <span>Browse</span>
         </button>
 
+        <!-- Sell Material Action Button -->
         <button onclick="switchTab('list')" id="tab-list-btn"
-          class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-amber-500 text-blue-950 hover:bg-amber-400 shadow">
-          <i class="fa-solid fa-camera mr-1.5"></i> List Used Material
+          class="px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm shadow-blue-500/25 flex items-center gap-1.5">
+          <i class="fa-solid fa-camera text-xs sm:text-sm"></i>
+          <span>Sell Material</span>
         </button>
 
+        <!-- My Listings (Visible on Login) -->
         <button onclick="switchTab('my')" id="tab-my-btn"
-          class="hidden px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/10 text-white hover:bg-white/20">
-          <i class="fa-solid fa-layer-group mr-1.5"></i> My Listings
+          class="hidden px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5">
+          <i class="fa-solid fa-layer-group text-slate-400"></i>
+          <span class="hidden sm:inline">My Posts</span>
         </button>
 
-        <!-- Auth State Container: Admin Login -->
-        <div id="auth-logged-out" class="ml-2">
+        <!-- Admin Portal Controls -->
+        <div id="auth-logged-out" class="pl-1 border-l border-slate-200">
           <button onclick="openAuthModal()"
-            class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow flex items-center gap-1.5">
-            <i class="fa-solid fa-shield-halved text-amber-300"></i>
-            <span>Admin Login</span>
+            class="px-3 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90 flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved text-blue-600"></i>
+            <span class="hidden sm:inline">Admin Login</span>
           </button>
         </div>
 
-        <div id="auth-logged-in" class="hidden flex items-center space-x-2 ml-2">
-          <span id="admin-badge" class="px-2.5 py-1 rounded-full bg-red-600 text-white text-[11px] font-black tracking-wider uppercase shadow-sm flex items-center gap-1">
-            <i class="fa-solid fa-shield-halved"></i> ADMIN
+        <div id="auth-logged-in" class="hidden flex items-center space-x-2 pl-1 border-l border-slate-200">
+          <span id="admin-badge" class="px-2.5 py-1 rounded-lg bg-red-50 text-red-700 border border-red-200 text-xs font-bold flex items-center gap-1">
+            <i class="fa-solid fa-shield-halved text-red-600"></i>
+            <span>Admin</span>
           </span>
-          <span id="user-display-name" class="text-xs font-semibold text-amber-300 hidden sm:inline"></span>
+          <span id="user-display-name" class="text-xs font-semibold text-slate-600 hidden lg:inline"></span>
           <button onclick="handleLogout()" title="Logout Admin"
-            class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-red-500/20 text-white text-xs font-medium transition flex items-center gap-1">
+            class="p-2 text-xs rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            <span class="hidden sm:inline">Logout</span>
           </button>
         </div>
+
       </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
-    <!-- LISTING VIEW (SENIOR) -->
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full">
+
+    <!-- ============================================================ -->
+    <!-- BROWSE VIEW (JUNIOR & ALL STUDENTS)                         -->
+    <!-- ============================================================ -->
+    <section id="view-browse" class="space-y-6">
+
+      <!-- Hero Banner (Deep Sapphire & Indigo Modern Canvas) -->
+      <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 rounded-3xl p-6 sm:p-8 md:p-10 text-white shadow-xl border border-slate-800/80 relative overflow-hidden">
+        <div class="absolute -right-16 -top-16 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute right-1/3 -bottom-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-3xl relative z-10">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-200 border border-blue-400/20 mb-3.5">
+            <i class="fa-solid fa-graduation-cap text-blue-400"></i>
+            <span>PICT Pune &bull; SPPU Curriculum Marketplace</span>
+          </div>
+          
+          <h1 id="browse-heading" class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white">
+            Study Materials from Your PICT Seniors
+          </h1>
+          <p id="browse-subheading" class="text-blue-100/80 text-sm sm:text-base mt-2.5 leading-relaxed font-normal">
+            Buy verified semester textbooks, handwritten toppers' notes, and lab instruments at fair prices. Chat directly on WhatsApp and collect on campus.
+          </p>
+
+          <!-- Feature Pills -->
+          <div class="flex flex-wrap items-center gap-2.5 sm:gap-4 mt-6 text-xs text-blue-200">
+            <span class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> AI Vision 1-Photo Listing
+            </span>
+            <span class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+              <i class="fa-brands fa-whatsapp text-emerald-400"></i> Direct WhatsApp Connect
+            </span>
+            <span class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+              <i class="fa-solid fa-handshake text-blue-300"></i> 100% Peer-to-Peer
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Department Filter Bar -->
+      <div id="browse-section" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs space-y-4">
+        
+        <!-- Search Input -->
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+          <input type="text" id="search-input" oninput="renderListings()"
+            placeholder="Search by subject (e.g. DSA, OS, TOC, M3), book title, author, or semester..."
+            class="w-full pl-11 pr-10 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-sm outline-none transition placeholder:text-slate-400 font-medium">
+          <button onclick="clearSearch()" id="clear-search-btn" class="hidden absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 text-sm">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Department Filter Chips -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-slate-100">
+          <div class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-filter text-blue-600"></i>
+            <span>Department:</span>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5 text-xs">
+            <button onclick="filterDept('All')" data-dept="All"
+              class="dept-btn px-3.5 py-1.5 rounded-xl font-semibold bg-blue-600 text-white shadow-xs transition">
+              All Branches
+            </button>
+            <button onclick="filterDept('Computer Engineering')" data-dept="Computer Engineering"
+              class="dept-btn px-3.5 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-600 hover:bg-slate-200/70 border border-transparent transition">
+              Comp
+            </button>
+            <button onclick="filterDept('Information Technology')" data-dept="Information Technology"
+              class="dept-btn px-3.5 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-600 hover:bg-slate-200/70 border border-transparent transition">
+              IT
+            </button>
+            <button onclick="filterDept('E&TC')" data-dept="E&TC"
+              class="dept-btn px-3.5 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-600 hover:bg-slate-200/70 border border-transparent transition">
+              E&TC
+            </button>
+            <button onclick="filterDept('AIDS')" data-dept="AIDS"
+              class="dept-btn px-3.5 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-600 hover:bg-slate-200/70 border border-transparent transition">
+              AI&DS
+            </button>
+            <button onclick="filterDept('First Year (FE)')" data-dept="First Year (FE)"
+              class="dept-btn px-3.5 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-600 hover:bg-slate-200/70 border border-transparent transition">
+              FE
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Listings Grid Header & Counter -->
+      <div class="flex items-center justify-between text-xs text-slate-500 font-semibold px-1">
+        <span id="results-count">Loading study materials...</span>
+        <span class="text-slate-400">PICT Campus Marketplace</span>
+      </div>
+
+      <!-- Listings Cards Grid -->
+      <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden text-center py-16 bg-white rounded-3xl border border-slate-200/80 shadow-xs">
+        <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-3 shadow-inner">
+          <i class="fa-solid fa-box-open"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">No study materials match your search</h3>
+        <p class="text-sm text-slate-400 mt-1">Try another keyword or filter, or be the first senior to list one!</p>
+        <button onclick="switchTab('list')" class="mt-4 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
+          <i class="fa-solid fa-plus mr-1"></i> List an Item Now
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- LISTING CREATION VIEW (SENIOR SELLER)                        -->
+    <!-- ============================================================ -->
     <section id="view-list" class="space-y-6 hidden">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
-        <div class="max-w-2xl">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mb-3">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Instant Scan
+      <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 p-6 md:p-8">
+        
+        <div class="max-w-2xl mb-8">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/70 mb-3">
+            <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i> Powered by Sarvam AI Vision
           </span>
-          <h2 class="text-2xl font-bold text-slate-900">List Your Study Material with 1 Photo</h2>
-          <p class="text-slate-500 text-sm mt-1">
-            Upload or snap a photo of your textbook, notes, or drafter. Sarvam AI Vision will auto-detect the SPPU
-            subject, branch, and suggested campus resale price.
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">List Your Study Material with 1 Photo</h2>
+          <p class="text-slate-500 text-sm mt-1.5 leading-relaxed">
+            Snap or upload a photo of your textbook, notes, or drafter. Sarvam AI Vision will auto-detect the SPPU subject, branch, and suggested resale price.
           </p>
         </div>
 
-        <div class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <!-- Upload Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          <!-- Upload Area (Left Column) -->
           <div class="lg:col-span-5 space-y-4">
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Step 1: Upload Book Photo</label>
+            
             <div id="dropzone"
-              class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition flex flex-col items-center justify-center min-h-[280px]">
+              class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col items-center justify-center min-h-[300px] bg-slate-50/50">
               <input type="file" id="file-input" accept="image/*" class="hidden">
+              
               <div id="upload-placeholder" class="space-y-3">
-                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-2xl">
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
                   <i class="fa-solid fa-cloud-arrow-up"></i>
                 </div>
                 <div>
-                  <p class="font-semibold text-slate-700">Click to upload or drag & drop</p>
-                  <p class="text-xs text-slate-400 mt-1">Book covers, handwritten notes pages, PYQs (JPG, PNG)</p>
+                  <p class="font-bold text-slate-800 text-sm">Click to upload or drag & drop</p>
+                  <p class="text-xs text-slate-400 mt-1">Book covers, handwritten notes, PYQ sheets (JPG, PNG)</p>
                 </div>
+                <span class="inline-block px-3 py-1 bg-white rounded-lg text-[11px] font-semibold text-slate-600 border border-slate-200 shadow-xs">
+                  Browse files
+                </span>
               </div>
-              <img id="image-preview" class="hidden max-h-64 rounded-lg object-contain shadow-sm border border-slate-200">
+              
+              <img id="image-preview" class="hidden max-h-72 rounded-xl object-contain shadow-md border border-slate-200">
             </div>
 
-            <div id="ai-loading" class="hidden p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center space-x-3 text-indigo-900">
-              <i class="fa-solid fa-circle-notch fa-spin text-xl text-indigo-600"></i>
+            <!-- AI Vision Progress Indicator -->
+            <div id="ai-loading" class="hidden p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl flex items-center space-x-3 text-blue-900 shadow-xs">
+              <i class="fa-solid fa-circle-notch fa-spin text-xl text-blue-600"></i>
               <div>
-                <p class="text-sm font-semibold">Sarvam AI Vision Scanning...</p>
-                <p class="text-xs text-indigo-700">Extracting subject, branch, condition, and price...</p>
+                <p class="text-sm font-bold">Sarvam AI Vision Scanning...</p>
+                <p class="text-xs text-blue-700">Extracting book title, department, condition, and fair resale price...</p>
               </div>
             </div>
 
-            <button id="re-analyze-btn" class="hidden w-full py-2 px-4 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 transition">
-              <i class="fa-solid fa-rotate-right mr-1.5"></i> Re-scan Photo
+            <button id="re-analyze-btn" class="hidden w-full py-2.5 px-4 rounded-xl border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition shadow-xs flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-rotate-right"></i>
+              <span>Re-scan Photo with AI</span>
             </button>
           </div>
 
-          <!-- Form Details -->
+          <!-- Form Details (Right Column) -->
           <div class="lg:col-span-7">
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-4">Step 2: Review & Complete Details</label>
+            
             <form id="listing-form" class="space-y-4">
               <div>
                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Listing Title</label>
                 <input type="text" id="title" required placeholder="e.g. Data Structures & Algorithms - Nirali Prakashan"
-                  class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none transition">
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition font-medium">
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Subject (SPPU)</label>
                   <input type="text" id="subject" placeholder="e.g. Data Structures (DSA)"
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Department</label>
-                  <select id="department" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
+                  <select id="department" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
                     <option value="Computer Engineering">Computer Engineering</option>
                     <option value="Information Technology">Information Technology</option>
                     <option value="E&TC">Electronics & Telecom (E&TC)</option>
@@ -140,8 +292,8 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Year</label>
-                  <select id="target_year" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
+                  <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Target Year</label>
+                  <select id="target_year" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
                     <option value="FE">FE (First Year)</option>
                     <option value="SE">SE (Second Year)</option>
                     <option value="TE">TE (Third Year)</option>
@@ -151,11 +303,11 @@
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Semester</label>
                   <input type="text" id="semester" placeholder="e.g. Semester 3"
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Type</label>
-                  <select id="material_type" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
+                  <select id="material_type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
                     <option value="Textbook">Textbook</option>
                     <option value="Handwritten Notes">Handwritten Notes</option>
                     <option value="Question Bank / PYQ">Question Bank / PYQ</option>
@@ -168,7 +320,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Condition</label>
-                  <select id="condition" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
+                  <select id="condition" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
                     <option value="Like New">Like New</option>
                     <option value="Good">Good</option>
                     <option value="Annotated / Highlighted">Annotated / Notes</option>
@@ -178,88 +330,55 @@
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Resale Price (₹)</label>
                   <input type="number" id="price_inr" required placeholder="200"
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none font-bold text-emerald-700">
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 text-sm outline-none font-bold text-emerald-700 bg-emerald-50/30">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Original MRP (₹)</label>
                   <input type="number" id="original_mrp" placeholder="450"
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none text-slate-500">
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none text-slate-500">
                 </div>
               </div>
 
               <div>
                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Description</label>
-                <textarea id="description" rows="2" placeholder="Brief info for buyers (e.g. includes solved PYQs, highlighted topics)"
-                  class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none"></textarea>
+                <textarea id="description" rows="2" placeholder="Brief info for buyers (e.g. includes solved PYQs, highlighted topics, good condition)"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none"></textarea>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Your Name / Roll No.</label>
                   <input type="text" id="seller_name" placeholder="e.g. Rohan (TE Comp)" required
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">WhatsApp / Phone</label>
+                  <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">WhatsApp Phone Number</label>
                   <input type="text" id="seller_contact" placeholder="e.g. 9876543210" required
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
                 </div>
               </div>
 
-              <div class="pt-4">
+              <div class="pt-2">
                 <button type="submit" id="submit-btn"
-                  class="w-full py-3 px-6 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-semibold shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2">
+                  class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2">
                   <i class="fa-solid fa-check"></i>
                   <span>Publish to PICT Marketplace</span>
                 </button>
               </div>
             </form>
           </div>
+
         </div>
       </div>
     </section>
 
-    <!-- BROWSE VIEW (JUNIOR & ALL) -->
-    <section id="view-browse" class="space-y-6">
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <h2 id="browse-heading" class="text-2xl font-bold text-slate-900">Study Materials Available at PICT</h2>
-          <p id="browse-subheading" class="text-slate-500 text-sm">Affordable books, notes, and lab instruments from your seniors</p>
-        </div>
-        <div class="flex flex-wrap gap-2 text-xs">
-          <button onclick="filterDept('All')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-blue-700 text-white">All</button>
-          <button onclick="filterDept('Computer Engineering')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">Comp</button>
-          <button onclick="filterDept('Information Technology')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">IT</button>
-          <button onclick="filterDept('E&TC')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">E&TC</button>
-          <button onclick="filterDept('AIDS')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">AIDS</button>
-          <button onclick="filterDept('First Year (FE)')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">FE</button>
-        </div>
-      </div>
-
-      <div class="relative">
-        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-        <input type="text" id="search-input" oninput="renderListings()" placeholder="Search by subject (DSA, OS, TOC), book title, or author..."
-          class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 text-sm outline-none shadow-sm">
-      </div>
-
-      <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-
-      <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200">
-        <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl mb-3">
-          <i class="fa-solid fa-box-open"></i>
-        </div>
-        <h3 class="text-base font-semibold text-slate-700">No study materials found</h3>
-        <p class="text-sm text-slate-400 mt-1">Check back later or list one yourself!</p>
-        <button onclick="switchTab('list')" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
-          List an Item Now
-        </button>
-      </div>
-    </section>
   </main>
 
-  <!-- ADMIN AUTH MODAL -->
+  <!-- ============================================================ -->
+  <!-- ADMIN AUTH MODAL                                             -->
+  <!-- ============================================================ -->
   <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative border border-slate-100">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative border border-slate-100">
       <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg transition">
         <i class="fa-solid fa-xmark"></i>
       </button>
@@ -268,7 +387,7 @@
         <div class="w-12 h-12 bg-red-100 text-red-600 rounded-2xl mx-auto flex items-center justify-center text-xl shadow-inner mb-3">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
-        <h3 class="text-xl font-black text-slate-800">Admin Portal Login</h3>
+        <h3 class="text-xl font-black text-slate-900">Admin Portal Login</h3>
         <p class="text-xs text-slate-500 mt-1">Sign in to moderate, edit details, or remove campus listings.</p>
       </div>
 
@@ -281,7 +400,7 @@
           <div class="relative">
             <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
             <input type="email" id="login-email" required placeholder="admin@pict.edu" value="admin@pict.edu"
-              class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm outline-none transition">
+              class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition">
           </div>
         </div>
         <div>
@@ -289,11 +408,11 @@
           <div class="relative">
             <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
             <input type="password" id="login-password" required placeholder="••••••••"
-              class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm outline-none transition">
+              class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition">
           </div>
         </div>
         <button type="submit" id="login-submit-btn"
-          class="w-full py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
+          class="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
           <i class="fa-solid fa-shield-halved"></i>
           <span>Sign In as Admin</span>
         </button>
@@ -301,34 +420,38 @@
     </div>
   </div>
 
-  <!-- EDIT LISTING MODAL (FOR OWNER & ADMIN) -->
+  <!-- ============================================================ -->
+  <!-- EDIT LISTING MODAL (FOR OWNER & ADMIN)                       -->
+  <!-- ============================================================ -->
   <div id="edit-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative max-h-[90vh] overflow-y-auto border border-slate-100">
       <button onclick="closeEditModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
         <i class="fa-solid fa-xmark"></i>
       </button>
 
-      <h3 class="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+      <h3 class="text-xl font-black text-slate-900 flex items-center gap-2 mb-1">
         <i class="fa-solid fa-pen-to-square text-blue-600"></i> Edit Listing Content
       </h3>
-      <p class="text-xs text-slate-500 mb-4">Modify listing details. Only the owner or campus admin can perform this.</p>
+      <p class="text-xs text-slate-500 mb-5">Modify listing details. Only the owner or campus admin can perform this.</p>
 
       <form id="edit-form" onsubmit="handleSaveEdit(event)" class="space-y-4">
         <input type="hidden" id="edit-id">
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Title</label>
-          <input type="text" id="edit-title" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+          <input type="text" id="edit-title" required
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Subject</label>
-            <input type="text" id="edit-subject" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+            <input type="text" id="edit-subject"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-blue-500">
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Department</label>
-            <select id="edit-department" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none bg-white">
+            <select id="edit-department" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none bg-white">
               <option value="Computer Engineering">Computer Engineering</option>
               <option value="Information Technology">Information Technology</option>
               <option value="E&TC">Electronics & Telecom (E&TC)</option>
@@ -339,10 +462,10 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Year</label>
-            <select id="edit-target-year" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none bg-white">
+            <select id="edit-target-year" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none bg-white">
               <option value="FE">FE</option>
               <option value="SE">SE</option>
               <option value="TE">TE</option>
@@ -351,50 +474,54 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Semester</label>
-            <input type="text" id="edit-semester" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+            <input type="text" id="edit-semester" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Type</label>
-            <select id="edit-material-type" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none bg-white">
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Material Type</label>
+            <select id="edit-material-type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none bg-white">
               <option value="Textbook">Textbook</option>
-              <option value="Handwritten Notes">Notes</option>
-              <option value="Question Bank / PYQ">PYQ</option>
+              <option value="Handwritten Notes">Handwritten Notes</option>
+              <option value="Question Bank / PYQ">Question Bank / PYQ</option>
               <option value="Lab Manual">Lab Manual</option>
-              <option value="Tool / Instrument">Tool / Drafter</option>
+              <option value="Tool / Instrument">Drafter / Tool</option>
             </select>
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Condition</label>
-            <select id="edit-condition" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none bg-white">
+            <select id="edit-condition" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none bg-white">
               <option value="Like New">Like New</option>
               <option value="Good">Good</option>
-              <option value="Annotated / Highlighted">Annotated</option>
+              <option value="Annotated / Highlighted">Annotated / Notes</option>
               <option value="Fair / Worn">Fair / Worn</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Resale Price (₹)</label>
-            <input type="number" id="edit-price" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none font-bold text-emerald-700">
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Price (₹)</label>
+            <input type="number" id="edit-price" required
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none font-bold text-emerald-700">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Original MRP (₹)</label>
-            <input type="number" id="edit-mrp" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none text-slate-500">
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">MRP (₹)</label>
+            <input type="number" id="edit-mrp"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none text-slate-500">
           </div>
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Description</label>
-          <textarea id="edit-description" rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none"></textarea>
+          <textarea id="edit-description" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none"></textarea>
         </div>
 
-        <div class="flex gap-2 pt-2">
-          <button type="button" onclick="closeEditModal()" class="flex-1 py-2 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-100">
+        <div class="pt-3 flex gap-3">
+          <button type="button" onclick="closeEditModal()"
+            class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition">
             Cancel
           </button>
-          <button type="submit" id="save-edit-btn" class="flex-1 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold shadow">
+          <button type="submit" id="save-edit-btn"
+            class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md transition">
             Save Changes
           </button>
         </div>
@@ -402,14 +529,25 @@
     </div>
   </div>
 
-  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-    <div class="flex items-center justify-center gap-2 mb-1.5">
-      <img src="/static/logo.png" alt="PICT OLX" class="w-6 h-6 object-contain rounded-md inline-block">
-      <span class="font-bold text-slate-700 text-sm">PICT Campus Marketplace</span>
+  <!-- Modern Clean Footer -->
+  <footer class="bg-white border-t border-slate-200/90 py-6 text-center text-xs text-slate-500 mt-12">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <img src="/static/logo.png" alt="PICT OLX" class="w-6 h-6 object-contain rounded-md inline-block">
+        <span class="font-bold text-slate-800 text-sm">PICT Campus Marketplace</span>
+      </div>
+      <p class="text-slate-400">
+        Peer-to-Peer Study Hub &bull; Powered by Sarvam AI, Supabase &amp; Cloudinary
+      </p>
+      <div class="text-slate-400 font-medium">
+        Built for PICT Pune &bull; SPPU
+      </div>
     </div>
-    <p class="text-slate-400">Seniors &rarr; Juniors Peer-to-Peer Study Hub &bull; Powered by Sarvam AI, Supabase &amp; Cloudinary</p>
   </footer>
 
+  <!-- ============================================================ -->
+  <!-- JAVASCRIPT APPLICATION LOGIC                                 -->
+  <!-- ============================================================ -->
   <script>
     let currentImageUri = "";
     let allListings = [];
@@ -418,9 +556,7 @@
     let currentUser = null;
     let APP_CONFIG = { country_code: "91", college_name: "PICT", currency: "₹" };
 
-    // -------------------------------------------------------------
-    // Stylish Toast & Dialog Helpers (SweetAlert2)
-    // -------------------------------------------------------------
+    // SweetAlert2 Toast Helper
     const Toast = Swal.mixin({
       toast: true,
       position: 'top-end',
@@ -440,9 +576,18 @@
       Toast.fire({ icon, title });
     }
 
-    // -------------------------------------------------------------
+    // Config Loader
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        const data = await res.json();
+        if (data) APP_CONFIG = data;
+      } catch (err) {
+        console.warn("Could not load config", err);
+      }
+    }
+
     // Auth Management
-    // -------------------------------------------------------------
     async function checkAuth() {
       const token = localStorage.getItem('pict_token');
       if (!token) {
@@ -485,7 +630,6 @@
           adminBadge.classList.add('hidden');
         }
 
-        // Auto-populate listing form fields
         if (user.name) document.getElementById('seller_name').value = user.name;
         if (user.phone) document.getElementById('seller_contact').value = user.phone;
       } else {
@@ -560,9 +704,7 @@
       showToast("Logged out from Admin portal.", "info");
     }
 
-    // -------------------------------------------------------------
     // Tab Navigation
-    // -------------------------------------------------------------
     function switchTab(tab) {
       currentView = tab;
       const viewList = document.getElementById('view-list');
@@ -577,33 +719,31 @@
       if (tab === 'list') {
         viewList.classList.remove('hidden');
         viewBrowse.classList.add('hidden');
-        btnList.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-amber-500 text-blue-950 shadow";
-        btnBrowse.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30";
-        btnMy.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/10 text-white hover:bg-white/20";
+        btnList.className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-blue-600 text-white shadow-md flex items-center gap-1.5";
+        btnBrowse.className = "px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5";
+        btnMy.className = "px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5";
       } else if (tab === 'my') {
         viewList.classList.add('hidden');
         viewBrowse.classList.remove('hidden');
         browseHeading.innerText = "My Study Material Listings";
         browseSubheading.innerText = "Manage your listed books, mark them as SOLD, or remove them";
-        btnMy.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-amber-500 text-blue-950 shadow";
-        btnBrowse.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30";
-        btnList.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30";
+        btnMy.className = "px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-blue-50 text-blue-700 border border-blue-200/60 shadow-xs flex items-center gap-1.5";
+        btnBrowse.className = "px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5";
+        btnList.className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs flex items-center gap-1.5";
         fetchListings();
       } else {
         viewList.classList.add('hidden');
         viewBrowse.classList.remove('hidden');
-        browseHeading.innerText = "Study Materials Available at PICT";
-        browseSubheading.innerText = "Affordable books, notes, and lab instruments from your seniors";
-        btnBrowse.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-amber-500 text-blue-950 shadow";
-        btnList.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30";
-        btnMy.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/10 text-white hover:bg-white/20";
+        browseHeading.innerText = "Study Materials from Your PICT Seniors";
+        browseSubheading.innerText = "Buy verified semester textbooks, handwritten toppers' notes, and lab instruments at fair prices. Chat directly on WhatsApp and collect on campus.";
+        btnBrowse.className = "px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-blue-50 text-blue-700 border border-blue-200/60 shadow-xs flex items-center gap-1.5";
+        btnList.className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs flex items-center gap-1.5";
+        btnMy.className = "px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5";
         fetchListings();
       }
     }
 
-    // -------------------------------------------------------------
     // Image Upload & AI Vision
-    // -------------------------------------------------------------
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('file-input');
     const imagePreview = document.getElementById('image-preview');
@@ -671,17 +811,17 @@
           if (a.target_year) document.getElementById('target_year').value = a.target_year;
           document.getElementById('semester').value = a.semester || '';
           if (a.material_type) document.getElementById('material_type').value = a.material_type;
-          if (a.detected_condition) document.getElementById('condition').value = a.detected_condition;
+          if (a.condition) document.getElementById('condition').value = a.condition;
           document.getElementById('price_inr').value = a.suggested_price_inr || '';
           document.getElementById('original_mrp').value = a.estimated_mrp_inr || '';
           document.getElementById('description').value = a.description || '';
-          showToast("AI Vision scanned details successfully! ✨", "success");
+          showToast("Sarvam AI auto-filled book details! ✨", "success");
         } else {
           Swal.fire({
-            title: 'AI Scan Notice',
+            title: 'AI Notice',
             text: data.error || "Could not parse image metadata.",
             icon: 'warning',
-            confirmButtonColor: '#1d4ed8',
+            confirmButtonColor: '#2563eb',
             customClass: { popup: 'rounded-2xl shadow-xl' }
           });
         }
@@ -693,15 +833,13 @@
       }
     }
 
-    // -------------------------------------------------------------
-    // Listing Creation & Management
-    // -------------------------------------------------------------
+    // Listing Creation
     document.getElementById('listing-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const token = localStorage.getItem('pict_token');
       const submitBtn = document.getElementById('submit-btn');
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Uploading to Cloudinary & Publishing...</span>`;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Uploading & Publishing...</span>`;
 
       const payload = {
         title: document.getElementById('title').value,
@@ -734,7 +872,7 @@
             icon: 'success',
             title: 'Published Successfully! 🎉',
             text: 'Your study material is now live on the PICT Marketplace.',
-            confirmButtonColor: '#1d4ed8',
+            confirmButtonColor: '#2563eb',
             customClass: { popup: 'rounded-2xl shadow-xl' }
           });
           document.getElementById('listing-form').reset();
@@ -754,6 +892,7 @@
       }
     });
 
+    // Toggle Sold & Delete Actions
     async function toggleSold(id, soldStatus) {
       const token = localStorage.getItem('pict_token');
       if (!token) {
@@ -819,9 +958,7 @@
       }
     }
 
-    // -------------------------------------------------------------
-    // Edit Modal Logic (Owner & Admin)
-    // -------------------------------------------------------------
+    // Edit Modal Logic
     function openEditModal(item) {
       document.getElementById('edit-id').value = item.id;
       document.getElementById('edit-title').value = item.title || '';
@@ -894,9 +1031,7 @@
       }
     }
 
-    // -------------------------------------------------------------
-    // Render Listings
-    // -------------------------------------------------------------
+    // Listings Fetch & Filter
     async function fetchListings() {
       try {
         const res = await fetch('/api/listings');
@@ -904,29 +1039,26 @@
         allListings = data.listings || [];
         renderListings();
       } catch (err) {
-        console.error("Error loading listings", err);
-      }
-    }
-
-    async function loadConfig() {
-      try {
-        const res = await fetch('/api/config');
-        const data = await res.json();
-        if (data) APP_CONFIG = { ...APP_CONFIG, ...data };
-      } catch (err) {
-        console.warn("Could not load /api/config", err);
+        console.error("Failed to load listings", err);
       }
     }
 
     function filterDept(dept) {
       selectedDepartment = dept;
       document.querySelectorAll('.dept-btn').forEach(btn => {
-        if (btn.innerText.includes(dept) || (dept === 'All' && btn.innerText === 'All')) {
-          btn.className = "dept-btn px-3 py-1.5 rounded-full font-medium bg-blue-700 text-white";
+        const btnDept = btn.getAttribute('data-dept');
+        if (btnDept === dept) {
+          btn.className = "dept-btn px-3.5 py-1.5 rounded-xl font-semibold bg-blue-600 text-white shadow-xs transition";
         } else {
-          btn.className = "dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100";
+          btn.className = "dept-btn px-3.5 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-600 hover:bg-slate-200/70 border border-transparent transition";
         }
       });
+      renderListings();
+    }
+
+    function clearSearch() {
+      document.getElementById('search-input').value = "";
+      document.getElementById('clear-search-btn').classList.add('hidden');
       renderListings();
     }
 
@@ -961,10 +1093,20 @@ Is this still available to collect on campus?`;
       return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
     }
 
+    // Render Listings
     function renderListings() {
       const grid = document.getElementById('listings-grid');
       const empty = document.getElementById('empty-state');
-      const query = (document.getElementById('search-input').value || "").toLowerCase();
+      const searchInput = document.getElementById('search-input');
+      const clearBtn = document.getElementById('clear-search-btn');
+      const countLabel = document.getElementById('results-count');
+      const query = (searchInput.value || "").trim().toLowerCase();
+
+      if (query) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
 
       const filtered = allListings.filter(item => {
         if (currentView === 'my') {
@@ -975,9 +1117,12 @@ Is this still available to collect on campus?`;
         const matchesQuery = !query ||
           (item.title && item.title.toLowerCase().includes(query)) ||
           (item.subject && item.subject.toLowerCase().includes(query)) ||
-          (item.description && item.description.toLowerCase().includes(query));
+          (item.description && item.description.toLowerCase().includes(query)) ||
+          (item.seller_name && item.seller_name.toLowerCase().includes(query));
         return matchesDept && matchesQuery;
       });
+
+      countLabel.innerText = `Showing ${filtered.length} study material${filtered.length === 1 ? '' : 's'}`;
 
       if (filtered.length === 0) {
         grid.innerHTML = "";
@@ -995,89 +1140,133 @@ Is this still available to collect on campus?`;
         // Escape JSON for onclick
         const itemJson = JSON.stringify(item).replace(/"/g, '&quot;');
 
+        // Calculate discount percentage if MRP exists
+        let discountHtml = '';
+        if (item.original_mrp && item.price_inr && item.original_mrp > item.price_inr) {
+          const pct = Math.round(((item.original_mrp - item.price_inr) / item.original_mrp) * 100);
+          discountHtml = `<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200/60">${pct}% OFF</span>`;
+        }
+
+        // Condition badge styling
+        let conditionColor = "bg-blue-50 text-blue-700 border-blue-200/70";
+        if (item.condition === 'Like New') conditionColor = "bg-emerald-50 text-emerald-700 border-emerald-200/70";
+        if (item.condition === 'Fair / Worn') conditionColor = "bg-slate-100 text-slate-600 border-slate-200";
+
         return `
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col relative ${isSold ? 'opacity-90 bg-slate-50/80' : ''}">
-          <div class="h-48 bg-slate-100 flex items-center justify-center overflow-hidden border-b border-slate-100 relative">
-            ${item.image_data_uri ? `<img src="${item.image_data_uri}" class="h-full w-full object-cover">` : `<i class="fa-solid fa-book text-slate-300 text-4xl"></i>`}
+        <div class="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-md hover:border-blue-300 transition-all duration-200 flex flex-col group relative ${isSold ? 'opacity-90 bg-slate-50/80' : ''}">
+          
+          <!-- Image Container with Aspect Ratio -->
+          <div class="h-48 sm:h-52 bg-slate-100/80 flex items-center justify-center overflow-hidden border-b border-slate-100 relative">
+            ${item.image_data_uri ? `<img src="${item.image_data_uri}" class="h-full w-full object-cover group-hover:scale-103 transition duration-300">` : `<i class="fa-solid fa-book text-slate-300 text-4xl"></i>`}
             
+            <!-- Badges on top of Image -->
+            <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
+              <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold backdrop-blur-md shadow-xs border ${conditionColor}">
+                ${item.condition || 'Good'}
+              </span>
+            </div>
+
+            <div class="absolute top-3 right-3 z-10">
+              <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white/95 text-slate-700 backdrop-blur-md shadow-xs border border-slate-200/80">
+                ${item.department || 'General'}
+              </span>
+            </div>
+
+            <!-- Sold Overlay -->
             ${isSold ? `
-              <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center">
+              <div class="absolute inset-0 bg-slate-900/65 backdrop-blur-xs flex items-center justify-center z-20">
                 <span class="px-4 py-1.5 bg-red-600 text-white text-xs font-black tracking-widest rounded-full uppercase shadow-lg border border-white/20">
                   <i class="fa-solid fa-circle-check mr-1"></i> SOLD OUT
                 </span>
               </div>
             ` : ''}
 
+            <!-- Admin & Owner Float Controls -->
             ${canManage ? `
-              <div class="absolute top-2 right-2 flex gap-1 z-10">
-                <button onclick="openEditModal(${itemJson})" title="Edit Content (Admin/Owner)" 
-                  class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow text-xs transition">
+              <div class="absolute bottom-3 right-3 flex gap-1.5 z-30">
+                <button onclick="openEditModal(${itemJson})" title="Edit Content" 
+                  class="w-8 h-8 rounded-xl bg-white/95 text-blue-600 hover:bg-blue-600 hover:text-white shadow-md text-xs transition flex items-center justify-center border border-slate-200">
                   <i class="fa-solid fa-pen"></i>
                 </button>
-                <button onclick="deleteItem(${item.id})" title="Delete Listing (Admin/Owner)" 
-                  class="p-2 rounded-full bg-red-600 text-white hover:bg-red-700 shadow text-xs transition">
+                <button onclick="deleteItem(${item.id})" title="Delete Listing" 
+                  class="w-8 h-8 rounded-xl bg-white/95 text-red-600 hover:bg-red-600 hover:text-white shadow-md text-xs transition flex items-center justify-center border border-slate-200">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </div>
             ` : ''}
           </div>
 
+          <!-- Card Content Body -->
           <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
             <div>
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                  ${item.department || 'General'}
-                </span>
-                <span class="text-xs font-medium text-slate-400">
-                  ${item.target_year || 'FE'} ${item.semester ? '• ' + item.semester : ''}
-                </span>
+              <div class="flex items-center justify-between text-xs text-blue-600 font-bold mb-1">
+                <span>${item.subject || 'SPPU Study Material'}</span>
+                <span class="text-slate-400 font-medium">${item.target_year || 'FE'} ${item.semester ? '&bull; ' + item.semester : ''}</span>
               </div>
-              <h3 class="font-bold text-slate-900 text-base leading-tight">${item.title}</h3>
-              <p class="text-xs text-slate-500 mt-1 line-clamp-2">${item.description || 'No description provided.'}</p>
+
+              <h3 class="font-bold text-slate-900 text-base leading-snug line-clamp-1 group-hover:text-blue-600 transition" title="${item.title}">
+                ${item.title}
+              </h3>
+              
+              <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                ${item.description || 'Verified study material from senior student at PICT.'}
+              </p>
+
+              <div class="mt-2.5 flex items-center gap-1.5 text-xs text-slate-400">
+                <i class="fa-solid fa-user-graduate text-slate-300"></i>
+                <span class="truncate">Senior: <strong class="text-slate-700 font-semibold">${item.seller_name || 'PICT Senior'}</strong></span>
+              </div>
             </div>
 
-            <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <!-- Price & Buy Action -->
+            <div class="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
               <div class="flex items-center justify-between">
                 <div>
-                  <span class="text-lg font-black text-emerald-600">₹${item.price_inr}</span>
-                  ${item.original_mrp ? `<span class="text-xs text-slate-400 line-through ml-1.5">₹${item.original_mrp}</span>` : ''}
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-extrabold text-slate-900">₹${item.price_inr}</span>
+                    ${item.original_mrp ? `<span class="text-xs text-slate-400 line-through">₹${item.original_mrp}</span>` : ''}
+                  </div>
+                  ${discountHtml}
                 </div>
                 
                 ${isSold ? `
-                  <span class="px-3 py-1.5 bg-slate-200 text-slate-500 rounded-lg text-xs font-bold cursor-not-allowed">
+                  <span class="px-3.5 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs font-bold cursor-not-allowed border border-slate-200">
                     Sold Out
                   </span>
                 ` : `
                   <a href="${getWhatsAppUrl(item)}" target="_blank" 
-                     class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
-                    <i class="fa-brands fa-whatsapp text-sm"></i> Buy on WhatsApp
+                     class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                    <span>Buy on WhatsApp</span>
                   </a>
                 `}
               </div>
 
+              <!-- Admin Toggle Sold Bar -->
               ${canManage ? `
-                <div class="pt-1">
+                <div class="pt-1.5 border-t border-slate-100/70">
                   ${isSold ? `
                     <button onclick="toggleSold(${item.id}, false)" 
-                      class="w-full py-1.5 rounded-lg border border-emerald-500 text-emerald-700 hover:bg-emerald-50 text-xs font-bold transition flex items-center justify-center gap-1">
+                      class="w-full py-1.5 rounded-xl border border-emerald-500 text-emerald-700 hover:bg-emerald-50 text-xs font-bold transition flex items-center justify-center gap-1.5">
                       <i class="fa-solid fa-rotate-left"></i> Mark as Available
                     </button>
                   ` : `
                     <button onclick="toggleSold(${item.id}, true)" 
-                      class="w-full py-1.5 rounded-lg border border-amber-500 text-amber-700 hover:bg-amber-50 text-xs font-bold transition flex items-center justify-center gap-1">
+                      class="w-full py-1.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-bold transition flex items-center justify-center gap-1.5">
                       <i class="fa-solid fa-check"></i> Mark as Sold
                     </button>
                   `}
                 </div>
               ` : ''}
             </div>
+
           </div>
         </div>
         `;
       }).join('');
     }
 
-    // Initialize application
+    // Initialize Application
     loadConfig();
     checkAuth();
     fetchListings();
