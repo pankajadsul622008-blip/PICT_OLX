@@ -939,19 +939,25 @@
       const cleanPhone = phone.startsWith(cc) && phone.length === (cc.length + 10) 
         ? phone 
         : (phone.length === 10 ? cc + phone : phone);
-      const seller = item.seller_name || 'Senior';
-      const deptYear = `${item.department || 'General'} (${item.target_year || 'FE'}${item.semester ? ' • ' + item.semester : ''})`;
-      const college = APP_CONFIG.college_name || 'Campus';
 
-      const msg =
-`👋 Hi ${seller}!
+      const rawSeller = (item.seller_name || '').trim();
+      const sellerGreeting = (!rawSeller || /^\d+$/.test(rawSeller)) ? 'Hi Senior!' : `Hi ${rawSeller}!`;
+      const dept = item.department || 'General';
+      const year = item.target_year || 'FE';
+      const sem = item.semester ? ` - ${item.semester}` : '';
+      const college = APP_CONFIG.college_name || 'PICT';
+      const condition = item.condition || 'Good';
+      const matType = item.material_type || 'Study Material';
+
+      const msg = 
+`${sellerGreeting}
 I saw your study material listing on ${college} Campus Marketplace:
 
-📚 *Item:* ${item.title}
-📖 *Subject:* ${item.subject || 'N/A'}
-🏫 *Dept & Year:* ${deptYear}
-🏷️ *Type:* ${item.material_type || 'Study Material'} (Condition: ${item.condition || 'Good'})
-💰 *Price:* ₹${item.price_inr}
+- *Item:* ${item.title}
+- *Subject:* ${item.subject || 'N/A'}
+- *Dept & Year:* ${dept} (${year}${sem})
+- *Type:* ${matType} (Condition: ${condition})
+- *Price:* Rs. ${item.price_inr}
 
 Is this still available to collect on campus?`;
 
