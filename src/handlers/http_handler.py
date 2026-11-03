@@ -59,6 +59,16 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
             else:
                 self.send_error(500, "Template index.html not found")
 
+        # API: Health Check for UptimeRobot (Eliminates Render cold start)
+        elif self.path in ("/api/health", "/health"):
+            import datetime
+            self._send_json({
+                "status": "healthy",
+                "uptime": "active",
+                "service": f"{COLLEGE_NAME} Campus Marketplace",
+                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
+            })
+
         # API: Public config for frontend
         elif self.path == "/api/config":
             self._send_json({
