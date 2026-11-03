@@ -14,6 +14,7 @@ from ..config import (
 )
 from ..database import get_all_listings, create_listing
 from ..services.sarvam_service import analyze_study_material_image
+from ..services.cloudinary_service import upload_image
 
 class MarketplaceHandler(BaseHTTPRequestHandler):
     """Handles HTTP requests for Campus Marketplace."""
@@ -111,6 +112,11 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
         # API: Create new listing
         elif self.path == "/api/listings":
             try:
+                # Upload image to Cloudinary CDN for fast delivery and storage savings
+                raw_image = payload.get("image_data_uri", "")
+                if raw_image:
+                    payload["image_data_uri"] = upload_image(raw_image)
+
                 new_id = create_listing(payload)
                 self._send_json({"success": True, "id": new_id})
             except Exception as e:

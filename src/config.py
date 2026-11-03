@@ -35,6 +35,12 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 DATABASE_NAME = os.environ.get("DATABASE_NAME", "listings.db")
 DB_PATH = BASE_DIR / DATABASE_NAME
 
+# Cloudinary Image Storage & CDN
+CLOUDINARY_URL = os.environ.get("CLOUDINARY_URL", "").strip()
+CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "").strip()
+CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY", "").strip()
+CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "").strip()
+
 # Sarvam AI Credentials & Models
 SARVAM_API_KEY = os.environ.get("SARVAM_API_KEY", "")
 SARVAM_VISION_MODEL = os.environ.get("SARVAM_VISION_MODEL", "gemma4")
