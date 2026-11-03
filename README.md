@@ -29,39 +29,28 @@
 ## 📸 Visual Showcase
 
 ### 1. Modern Glassmorphic Marketplace & SPPU Curriculum Hub
-The home page features a clean sapphire/slate aesthetic, real-time search, department chips (`Comp`, `IT`, `E&TC`, `AI&DS`, `FE`), dynamic discount calculations (`60% OFF`), and 1-click WhatsApp checkout.
+Clean sapphire/slate aesthetic, live search bar, department chips (`Comp`, `IT`, `E&TC`, `AI&DS`, `FE`), and campus hero banner running live on Render.
 
 <div align="center">
-  <img src="docs/screenshots/01_hero_marketplace.png" alt="PICT Marketplace Home" width="100%" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.08);" />
+  <img src="docs/screenshots/screenshot-1.png" alt="PICT Marketplace Home" width="100%" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.08);" />
 </div>
 
 <br>
 
-### 2. 1-Photo AI Listing Flow (Powered by Sarvam AI Vision)
-Sellers simply snap or drag a photo of their book cover. **Sarvam AI Vision (`gemma4`)** scans the cover, extracts the SPPU subject, branch, semester, condition, and auto-fills a fair campus resale price without manual typing.
+### 2. Live Study Material Cards & Direct WhatsApp Connect
+Seniors' study materials organized by department and semester with dynamic discount calculations (`60% OFF`), physical condition tags (`Like New`), and 1-click **Buy on WhatsApp** checkout.
 
 <div align="center">
-  <img src="docs/screenshots/02_sell_ai_vision.png" alt="Sell Study Material with AI" width="100%" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.08);" />
+  <img src="docs/screenshots/screenshot-2.png" alt="Live Study Material Cards" width="100%" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.08);" />
 </div>
 
 <br>
 
-### 3. Dedicated Campus Admin Moderation Portal & Mobile View
+### 3. Sarvam AI Vision 1-Photo Auto-Listing in Action
+Sellers simply snap or drag a photo of their book, notes, or instrument. **Sarvam AI Vision (`gemma4`)** reads the image and auto-populates Title, Subject, Branch, Semester, Condition, and Fair Resale Price with zero manual typing required.
+
 <div align="center">
-  <table>
-    <tr>
-      <td width="60%" align="center">
-        <strong>🛡️ Campus Admin Portal (`admin@pict.edu`)</strong><br>
-        <img src="docs/screenshots/03_admin_portal.png" alt="Admin Portal Modal" width="100%" style="border-radius: 12px; border: 1px solid #e2e8f0;" /><br>
-        <em>Full content moderation privileges: Edit, Delete, Toggle Sold Status</em>
-      </td>
-      <td width="40%" align="center">
-        <strong>📱 100% Mobile Responsive</strong><br>
-        <img src="docs/screenshots/04_mobile_view.png" alt="Mobile Responsive Interface" width="90%" style="border-radius: 12px; border: 1px solid #e2e8f0;" /><br>
-        <em>Optimized for smartphones and campus browsing</em>
-      </td>
-    </tr>
-  </table>
+  <img src="docs/screenshots/screenshot-3.png" alt="Sarvam AI Vision Auto-Scan" width="100%" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.08);" />
 </div>
 
 ---
@@ -71,7 +60,7 @@ Sellers simply snap or drag a photo of their book cover. **Sarvam AI Vision (`ge
 | The Traditional Struggle | The PICT Marketplace Solution |
 |---|---|
 | **Expensive Books**: Juniors spend ₹2,000–₹4,000 every semester buying brand-new books from Appa Balwant Chowk (ABC). | **Affordable Pre-Owned Deals**: Juniors get verified semester notes and books from seniors at 50%–70% discounts. |
-| **Tedious Listing**: Seniors take 10 minutes typing title, author, edition, semester, branch, and price on generic apps. | **1-Photo AI Auto-Fill**: **Sarvam AI Vision** extracts all metadata and sets a suggested price in under 2 seconds. |
+| **Tedious Listing**: Seniors take 10 minutes typing title, author, edition, semester, branch, and price on generic apps. | **1-Photo AI Auto-Fill**: **Sarvam AI Vision** extracts all metadata and sets a fair resale price in under 2 seconds. |
 | **Generic Spam**: Platforms like OLX are filled with non-college spam and lack SPPU syllabus context. | **100% PICT Localized**: Categorized strictly by SPPU branches (`Computer`, `IT`, `EnTC`, `AI&DS`, `FE`). |
 | **Escrow & Commission**: Payment gateways charge 2–3% + GST and delay bank payouts. | **Direct WhatsApp Meetup**: Zero platform fees; buyers and sellers meet directly in the PICT Canteen or Library. |
 
@@ -91,22 +80,22 @@ sequenceDiagram
     participant DB as Supabase PostgreSQL
     participant WA as WhatsApp Web / App
 
-    Senior->>Web: Uploads 1 book cover photo
+    Senior->>Web: Uploads 1 photo of book / calculator
     Web->>Server: POST /api/analyze (Base64)
-    Server->>Sarvam: Vision Analysis
+    Server->>Sarvam: Multimodal Vision Analysis
     Sarvam-->>Server: Title, Subject, Branch, Semester, Fair Price
-    Server-->>Web: Auto-fill Form
-    Senior->>Web: Clicks "Publish"
+    Server-->>Web: Auto-fill Form Fields
+    Senior->>Web: Clicks "Publish to PICT Marketplace"
     Web->>Server: POST /api/listings
     Server->>Cloud: Stream Image
-    Cloud-->>Server: Optimized HTTPS URL
+    Cloud-->>Server: Optimized CDN URL
     Server->>DB: INSERT into listings table
     Server-->>Web: Listing Live!
     
     Junior->>Web: Filters by Department & Subject
     Web->>DB: Fetch Active Listings
     Junior->>Web: Clicks "Buy on WhatsApp"
-    Web->>WA: Opens wa.me/?text=... (Pre-filled Markdown)
+    Web->>WA: Opens wa.me/?text=... (Pre-filled Native Markdown)
     WA-->>Senior: "Hi Senior! Is this available to collect on campus?"
     Note over Senior,Junior: Meet at PICT Canteen & Pay via UPI!
 ```
@@ -154,10 +143,9 @@ PICT_OLX/
 │
 ├── docs/                       # Project documentation & media
 │   └── screenshots/            # High-resolution UI captures
-│       ├── 01_hero_marketplace.png
-│       ├── 02_sell_ai_vision.png
-│       ├── 03_admin_portal.png
-│       └── 04_mobile_view.png
+│       ├── screenshot-1.png    # Live Marketplace Home & Hero
+│       ├── screenshot-2.png    # Live Product Cards & WhatsApp Buy
+│       └── screenshot-3.png    # Sarvam AI Vision Auto-Scan
 │
 ├── src/                        # Modular application source code
 │   ├── config.py               # Environment variables & constants
