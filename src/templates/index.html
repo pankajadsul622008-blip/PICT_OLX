@@ -393,6 +393,27 @@
       renderListings();
     }
 
+    function getWhatsAppUrl(item) {
+      const phone = (item.seller_contact || '').replace(/[^0-9]/g, '');
+      const cleanPhone = phone.startsWith('91') && phone.length === 12 ? phone : (phone.length === 10 ? '91' + phone : phone);
+      const seller = item.seller_name || 'Senior';
+      const deptYear = `${item.department || 'General'} (${item.target_year || 'FE'}${item.semester ? ' • ' + item.semester : ''})`;
+      
+      const msg = 
+`👋 Hi ${seller}!
+I saw your study material listing on PICT Campus Marketplace:
+
+📚 *Item:* ${item.title}
+📖 *Subject:* ${item.subject || 'N/A'}
+🏫 *Dept & Year:* ${deptYear}
+🏷️ *Type:* ${item.material_type || 'Study Material'} (Condition: ${item.condition || 'Good'})
+💰 *Price:* ₹${item.price_inr}
+
+Is this still available to collect on campus?`;
+
+      return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+    }
+
     function renderListings() {
       const grid = document.getElementById('listings-grid');
       const empty = document.getElementById('empty-state');
@@ -438,10 +459,10 @@
                 <span class="text-lg font-black text-emerald-600">₹${item.price_inr}</span>
                 ${item.original_mrp ? `<span class="text-xs text-slate-400 line-through ml-1.5">₹${item.original_mrp}</span>` : ''}
               </div>
-              <a href="https://wa.me/91${(item.seller_contact||'').replace(/[^0-9]/g, '')}?text=Hi!%20I%20am%20interested%20in%20buying%20your%20${encodeURIComponent(item.title)}%20listed%20on%20PICT%20Marketplace." 
+              <a href="${getWhatsAppUrl(item)}" 
                  target="_blank" 
-                 class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-sm transition">
-                <i class="fa-brands fa-whatsapp"></i> Buy
+                 class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+                <i class="fa-brands fa-whatsapp text-sm"></i> Buy on WhatsApp
               </a>
             </div>
           </div>
@@ -453,3 +474,4 @@
   </script>
 </body>
 </html>
+

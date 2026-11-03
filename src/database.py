@@ -65,3 +65,4 @@ def create_listing(payload: Dict[str, Any]) -> int:
         ))
         conn.commit()
         return cursor.lastrowid
+

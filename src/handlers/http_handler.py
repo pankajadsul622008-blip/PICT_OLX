@@ -99,3 +99,4 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
                 self._send_json({"error": str(e)}, status=500)
         else:
             self.send_error(404, "Not Found")
+

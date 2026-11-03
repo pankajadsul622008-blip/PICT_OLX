@@ -71,3 +71,4 @@ def test_connection():
         messages=[{"role": "user", "content": "Hello!"}]
     )
     print("Response:", res.choices[0].message.content)
+
