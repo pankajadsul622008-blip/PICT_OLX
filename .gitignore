@@ -1,0 +1,21 @@
+# Secrets & Environment Variables (NEVER COMMIT)
+.env
+*.env
+
+# SQLite Database
+*.db
+listings.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# OS Files
+.DS_Store
+Thumbs.db
