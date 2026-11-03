@@ -61,3 +61,4 @@ def upload_image(image_input: str, folder: str = "pict_marketplace") -> str:
         print(f"Cloudinary upload warning: {e}. Falling back to original image.")
 
     return image_input
+

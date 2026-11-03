@@ -9,13 +9,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body class="bg-slate-50 text-slate-800 min-h-screen">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
   <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-md sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center space-x-3">
-        <div
-          class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center font-bold text-blue-950 text-xl shadow">
+  <header class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('browse')">
+        <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center font-bold text-blue-950 text-xl shadow">
           P
         </div>
         <div>
@@ -23,26 +22,48 @@
           <p class="text-xs text-blue-200">Seniors &rarr; Juniors P2P Study Material Hub (Powered by Sarvam AI)</p>
         </div>
       </div>
-      <div class="flex items-center space-x-2">
+
+      <div class="flex flex-wrap items-center gap-2">
         <button onclick="switchTab('browse')" id="tab-browse-btn"
-          class="px-4 py-2 rounded-lg text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30">
+          class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30">
           <i class="fa-solid fa-book-open mr-1.5"></i> Browse Listings
         </button>
+
         <button onclick="switchTab('list')" id="tab-list-btn"
-          class="px-4 py-2 rounded-lg text-sm font-semibold transition bg-amber-500 text-blue-950 hover:bg-amber-400 shadow">
+          class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-amber-500 text-blue-950 hover:bg-amber-400 shadow">
           <i class="fa-solid fa-camera mr-1.5"></i> List Used Material
         </button>
+
+        <button onclick="switchTab('my')" id="tab-my-btn"
+          class="hidden px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/10 text-white hover:bg-white/20">
+          <i class="fa-solid fa-layer-group mr-1.5"></i> My Listings
+        </button>
+
+        <!-- Auth State Container -->
+        <div id="auth-logged-out" class="ml-2">
+          <button onclick="openAuthModal('login')"
+            class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white text-blue-900 hover:bg-slate-100 shadow">
+            <i class="fa-solid fa-user mr-1.5"></i> Login / Register
+          </button>
+        </div>
+
+        <div id="auth-logged-in" class="hidden flex items-center space-x-2 ml-2">
+          <span id="user-display-name" class="text-xs font-medium text-amber-300"></span>
+          <button onclick="handleLogout()" title="Logout"
+            class="p-1.5 text-xs rounded-lg text-blue-200 hover:text-white hover:bg-white/10 transition">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
       </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-8">
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
     <!-- LISTING VIEW (SENIOR) -->
-    <section id="view-list" class="space-y-6">
+    <section id="view-list" class="space-y-6 hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
         <div class="max-w-2xl">
-          <span
-            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mb-3">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mb-3">
             <i class="fa-solid fa-wand-magic-sparkles"></i> AI Instant Scan
           </span>
           <h2 class="text-2xl font-bold text-slate-900">List Your Study Material with 1 Photo</h2>
@@ -59,8 +80,7 @@
               class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition flex flex-col items-center justify-center min-h-[280px]">
               <input type="file" id="file-input" accept="image/*" class="hidden">
               <div id="upload-placeholder" class="space-y-3">
-                <div
-                  class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-2xl">
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-2xl">
                   <i class="fa-solid fa-cloud-arrow-up"></i>
                 </div>
                 <div>
@@ -68,12 +88,10 @@
                   <p class="text-xs text-slate-400 mt-1">Book covers, handwritten notes pages, PYQs (JPG, PNG)</p>
                 </div>
               </div>
-              <img id="image-preview"
-                class="hidden max-h-64 rounded-lg object-contain shadow-sm border border-slate-200">
+              <img id="image-preview" class="hidden max-h-64 rounded-lg object-contain shadow-sm border border-slate-200">
             </div>
 
-            <div id="ai-loading"
-              class="hidden p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center space-x-3 text-indigo-900">
+            <div id="ai-loading" class="hidden p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center space-x-3 text-indigo-900">
               <i class="fa-solid fa-circle-notch fa-spin text-xl text-indigo-600"></i>
               <div>
                 <p class="text-sm font-semibold">Sarvam AI Vision Scanning...</p>
@@ -81,8 +99,7 @@
               </div>
             </div>
 
-            <button id="re-analyze-btn"
-              class="hidden w-full py-2 px-4 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 transition">
+            <button id="re-analyze-btn" class="hidden w-full py-2 px-4 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 transition">
               <i class="fa-solid fa-rotate-right mr-1.5"></i> Re-scan Photo
             </button>
           </div>
@@ -92,8 +109,7 @@
             <form id="listing-form" class="space-y-4">
               <div>
                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Listing Title</label>
-                <input type="text" id="title" required
-                  placeholder="e.g. Data Structures & Algorithms - Nirali Prakashan"
+                <input type="text" id="title" required placeholder="e.g. Data Structures & Algorithms - Nirali Prakashan"
                   class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none transition">
               </div>
 
@@ -105,8 +121,7 @@
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Department</label>
-                  <select id="department"
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
+                  <select id="department" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
                     <option value="Computer Engineering">Computer Engineering</option>
                     <option value="Information Technology">Information Technology</option>
                     <option value="E&TC">Electronics & Telecom (E&TC)</option>
@@ -120,8 +135,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Year</label>
-                  <select id="target_year"
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
+                  <select id="target_year" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
                     <option value="FE">FE (First Year)</option>
                     <option value="SE">SE (Second Year)</option>
                     <option value="TE">TE (Third Year)</option>
@@ -135,8 +149,7 @@
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Type</label>
-                  <select id="material_type"
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
+                  <select id="material_type" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
                     <option value="Textbook">Textbook</option>
                     <option value="Handwritten Notes">Handwritten Notes</option>
                     <option value="Question Bank / PYQ">Question Bank / PYQ</option>
@@ -149,8 +162,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Condition</label>
-                  <select id="condition"
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
+                  <select id="condition" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none bg-white">
                     <option value="Like New">Like New</option>
                     <option value="Good">Good</option>
                     <option value="Annotated / Highlighted">Annotated / Notes</option>
@@ -171,8 +183,7 @@
 
               <div>
                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Description</label>
-                <textarea id="description" rows="2"
-                  placeholder="Brief info for buyers (e.g. includes solved PYQs, highlighted topics)"
+                <textarea id="description" rows="2" placeholder="Brief info for buyers (e.g. includes solved PYQs, highlighted topics)"
                   class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none"></textarea>
               </div>
 
@@ -202,78 +213,318 @@
       </div>
     </section>
 
-    <!-- BROWSE VIEW (JUNIOR) -->
-    <section id="view-browse" class="space-y-6 hidden">
+    <!-- BROWSE VIEW (JUNIOR & ALL) -->
+    <section id="view-browse" class="space-y-6">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-slate-900">Study Materials Available at PICT</h2>
-          <p class="text-slate-500 text-sm">Affordable books, notes, and lab instruments from your seniors</p>
+          <h2 id="browse-heading" class="text-2xl font-bold text-slate-900">Study Materials Available at PICT</h2>
+          <p id="browse-subheading" class="text-slate-500 text-sm">Affordable books, notes, and lab instruments from your seniors</p>
         </div>
         <div class="flex flex-wrap gap-2 text-xs">
-          <button onclick="filterDept('All')"
-            class="dept-btn px-3 py-1.5 rounded-full font-medium bg-blue-700 text-white">All</button>
-          <button onclick="filterDept('Computer Engineering')"
-            class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">Comp</button>
-          <button onclick="filterDept('Information Technology')"
-            class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">IT</button>
-          <button onclick="filterDept('E&TC')"
-            class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">E&TC</button>
-          <button onclick="filterDept('AIDS')"
-            class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">AIDS</button>
-          <button onclick="filterDept('First Year (FE)')"
-            class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">FE</button>
+          <button onclick="filterDept('All')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-blue-700 text-white">All</button>
+          <button onclick="filterDept('Computer Engineering')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">Comp</button>
+          <button onclick="filterDept('Information Technology')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">IT</button>
+          <button onclick="filterDept('E&TC')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">E&TC</button>
+          <button onclick="filterDept('AIDS')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">AIDS</button>
+          <button onclick="filterDept('First Year (FE)')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">FE</button>
         </div>
       </div>
 
       <div class="relative">
         <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-        <input type="text" id="search-input" oninput="renderListings()"
-          placeholder="Search by subject (DSA, OS, TOC), book title, or author..."
+        <input type="text" id="search-input" oninput="renderListings()" placeholder="Search by subject (DSA, OS, TOC), book title, or author..."
           class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 text-sm outline-none shadow-sm">
       </div>
 
       <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
       <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200">
-        <div
-          class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl mb-3">
+        <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl mb-3">
           <i class="fa-solid fa-box-open"></i>
         </div>
-        <h3 class="text-base font-semibold text-slate-700">No study materials listed yet</h3>
-        <p class="text-sm text-slate-400 mt-1">Be the first senior to list an item!</p>
-        <button onclick="switchTab('list')"
-          class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+        <h3 class="text-base font-semibold text-slate-700">No study materials found</h3>
+        <p class="text-sm text-slate-400 mt-1">Check back later or list one yourself!</p>
+        <button onclick="switchTab('list')" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
           List an Item Now
         </button>
       </div>
     </section>
   </main>
 
+  <!-- AUTH MODAL -->
+  <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex border-b border-slate-100 mb-6">
+        <button id="auth-tab-login" onclick="setAuthTab('login')"
+          class="flex-1 pb-3 text-sm font-bold border-b-2 border-blue-600 text-blue-600">
+          Login
+        </button>
+        <button id="auth-tab-register" onclick="setAuthTab('register')"
+          class="flex-1 pb-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600">
+          Sign Up
+        </button>
+      </div>
+
+      <div id="auth-error" class="hidden mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-xs border border-red-200"></div>
+
+      <!-- Login Form -->
+      <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">College Email / Username</label>
+          <input type="email" id="login-email" required placeholder="name@pict.edu"
+            class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••"
+            class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+        </div>
+        <button type="submit" id="login-submit-btn"
+          class="w-full py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm shadow transition">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" onsubmit="handleRegister(event)" class="space-y-3 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Full Name & Branch</label>
+          <input type="text" id="reg-name" required placeholder="e.g. Rohan Sharma (TE Comp)"
+            class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">College Email</label>
+          <input type="email" id="reg-email" required placeholder="rohan@pict.edu"
+            class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">WhatsApp Phone Number</label>
+          <input type="tel" id="reg-phone" required placeholder="e.g. 9876543210"
+            class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Create Password</label>
+          <input type="password" id="reg-password" required placeholder="••••••••"
+            class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+        </div>
+        <button type="submit" id="reg-submit-btn"
+          class="w-full py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm shadow transition">
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+    PICT Campus Marketplace &bull; Peer-to-Peer Study Hub &bull; Powered by Sarvam AI & Supabase
+  </footer>
+
   <script>
     let currentImageUri = "";
     let allListings = [];
     let selectedDepartment = "All";
+    let currentView = "browse"; // 'browse', 'list', 'my'
+    let currentUser = null;
+    let APP_CONFIG = { country_code: "91", college_name: "PICT", currency: "₹" };
 
+    // -------------------------------------------------------------
+    // Auth Management
+    // -------------------------------------------------------------
+    async function checkAuth() {
+      const token = localStorage.getItem('pict_token');
+      if (!token) {
+        updateAuthUI(null);
+        return;
+      }
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          updateAuthUI(data.user);
+        } else {
+          localStorage.removeItem('pict_token');
+          updateAuthUI(null);
+        }
+      } catch (err) {
+        console.warn("Auth check failed", err);
+      }
+    }
+
+    function updateAuthUI(user) {
+      currentUser = user;
+      const loggedOutBox = document.getElementById('auth-logged-out');
+      const loggedInBox = document.getElementById('auth-logged-in');
+      const userDisplayName = document.getElementById('user-display-name');
+      const myBtn = document.getElementById('tab-my-btn');
+
+      if (user) {
+        loggedOutBox.classList.add('hidden');
+        loggedInBox.classList.remove('hidden');
+        userDisplayName.innerText = `👋 ${user.name.split(' ')[0]}`;
+        myBtn.classList.remove('hidden');
+
+        // Auto-populate listing form fields
+        if (user.name) document.getElementById('seller_name').value = user.name;
+        if (user.phone) document.getElementById('seller_contact').value = user.phone;
+      } else {
+        loggedOutBox.classList.remove('hidden');
+        loggedInBox.classList.add('hidden');
+        myBtn.classList.add('hidden');
+        if (currentView === 'my') switchTab('browse');
+      }
+      renderListings();
+    }
+
+    function openAuthModal(tab = 'login') {
+      document.getElementById('auth-modal').classList.remove('hidden');
+      setAuthTab(tab);
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
+      document.getElementById('auth-error').classList.add('hidden');
+    }
+
+    function setAuthTab(tab) {
+      const loginTab = document.getElementById('auth-tab-login');
+      const regTab = document.getElementById('auth-tab-register');
+      const loginForm = document.getElementById('login-form');
+      const regForm = document.getElementById('register-form');
+      document.getElementById('auth-error').classList.add('hidden');
+
+      if (tab === 'login') {
+        loginTab.className = "flex-1 pb-3 text-sm font-bold border-b-2 border-blue-600 text-blue-600";
+        regTab.className = "flex-1 pb-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600";
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+      } else {
+        regTab.className = "flex-1 pb-3 text-sm font-bold border-b-2 border-blue-600 text-blue-600";
+        loginTab.className = "flex-1 pb-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600";
+        regForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const errBox = document.getElementById('auth-error');
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.success && data.token) {
+          localStorage.setItem('pict_token', data.token);
+          updateAuthUI(data.user);
+          closeAuthModal();
+        } else {
+          errBox.innerText = data.error || "Login failed.";
+          errBox.classList.remove('hidden');
+        }
+      } catch (err) {
+        errBox.innerText = "Network error: " + err.message;
+        errBox.classList.remove('hidden');
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const phone = document.getElementById('reg-phone').value;
+      const password = document.getElementById('reg-password').value;
+      const errBox = document.getElementById('auth-error');
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, password })
+        });
+        const data = await res.json();
+        if (data.success && data.token) {
+          localStorage.setItem('pict_token', data.token);
+          updateAuthUI(data.user);
+          closeAuthModal();
+        } else {
+          errBox.innerText = data.error || "Registration failed.";
+          errBox.classList.remove('hidden');
+        }
+      } catch (err) {
+        errBox.innerText = "Network error: " + err.message;
+        errBox.classList.remove('hidden');
+      }
+    }
+
+    async function handleLogout() {
+      const token = localStorage.getItem('pict_token');
+      if (token) {
+        try {
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } catch (e) {}
+      }
+      localStorage.removeItem('pict_token');
+      updateAuthUI(null);
+    }
+
+    // -------------------------------------------------------------
+    // Tab Navigation
+    // -------------------------------------------------------------
     function switchTab(tab) {
+      currentView = tab;
       const viewList = document.getElementById('view-list');
       const viewBrowse = document.getElementById('view-browse');
       const btnList = document.getElementById('tab-list-btn');
       const btnBrowse = document.getElementById('tab-browse-btn');
+      const btnMy = document.getElementById('tab-my-btn');
+
+      const browseHeading = document.getElementById('browse-heading');
+      const browseSubheading = document.getElementById('browse-subheading');
 
       if (tab === 'list') {
         viewList.classList.remove('hidden');
         viewBrowse.classList.add('hidden');
-        btnList.className = "px-4 py-2 rounded-lg text-sm font-semibold transition bg-amber-500 text-blue-950 shadow";
-        btnBrowse.className = "px-4 py-2 rounded-lg text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30";
+        btnList.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-amber-500 text-blue-950 shadow";
+        btnBrowse.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30";
+        btnMy.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/10 text-white hover:bg-white/20";
+      } else if (tab === 'my') {
+        viewList.classList.add('hidden');
+        viewBrowse.classList.remove('hidden');
+        browseHeading.innerText = "My Study Material Listings";
+        browseSubheading.innerText = "Manage your listed books, mark them as SOLD, or remove them";
+        btnMy.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-amber-500 text-blue-950 shadow";
+        btnBrowse.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30";
+        btnList.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30";
+        fetchListings();
       } else {
         viewList.classList.add('hidden');
         viewBrowse.classList.remove('hidden');
-        btnBrowse.className = "px-4 py-2 rounded-lg text-sm font-semibold transition bg-amber-500 text-blue-950 shadow";
-        btnList.className = "px-4 py-2 rounded-lg text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30";
+        browseHeading.innerText = "Study Materials Available at PICT";
+        browseSubheading.innerText = "Affordable books, notes, and lab instruments from your seniors";
+        btnBrowse.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-amber-500 text-blue-950 shadow";
+        btnList.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/20 text-white hover:bg-white/30";
+        btnMy.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition bg-white/10 text-white hover:bg-white/20";
         fetchListings();
       }
     }
 
+    // -------------------------------------------------------------
+    // Image Upload & AI Vision
+    // -------------------------------------------------------------
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('file-input');
     const imagePreview = document.getElementById('image-preview');
@@ -356,8 +607,16 @@
       }
     }
 
+    // -------------------------------------------------------------
+    // Listing Creation & Management
+    // -------------------------------------------------------------
     document.getElementById('listing-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const token = localStorage.getItem('pict_token');
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Uploading to Cloud & Publishing...</span>`;
+
       const payload = {
         title: document.getElementById('title').value,
         subject: document.getElementById('subject').value,
@@ -375,14 +634,17 @@
       };
 
       try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
         const res = await fetch('/api/listings', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: headers,
           body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (data.success) {
-          alert("Listing published to PICT Marketplace!");
+          alert("Listing published successfully to PICT Marketplace!");
           document.getElementById('listing-form').reset();
           imagePreview.classList.add('hidden');
           uploadPlaceholder.classList.remove('hidden');
@@ -390,13 +652,57 @@
           currentImageUri = "";
           switchTab('browse');
         } else {
-          alert("Error saving listing: " + (data.error || "Unknown"));
+          alert("Error saving listing: " + (data.error || "Unknown error"));
         }
       } catch (err) {
         alert("Failed to save listing: " + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Publish to PICT Marketplace</span>`;
       }
     });
 
+    async function markAsSold(id) {
+      if (!confirm("Are you sure you want to mark this item as SOLD?")) return;
+      const token = localStorage.getItem('pict_token');
+      try {
+        const res = await fetch(`/api/listings/${id}/sold`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          fetchListings();
+        } else {
+          alert("Could not mark as sold: " + (data.error || "Unauthorized"));
+        }
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    }
+
+    async function deleteItem(id) {
+      if (!confirm("Are you sure you want to delete this listing permanently?")) return;
+      const token = localStorage.getItem('pict_token');
+      try {
+        const res = await fetch(`/api/listings/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          fetchListings();
+        } else {
+          alert("Could not delete listing: " + (data.error || "Unauthorized"));
+        }
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Render Listings
+    // -------------------------------------------------------------
     async function fetchListings() {
       try {
         const res = await fetch('/api/listings');
@@ -405,6 +711,16 @@
         renderListings();
       } catch (err) {
         console.error("Error loading listings", err);
+      }
+    }
+
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        const data = await res.json();
+        if (data) APP_CONFIG = { ...APP_CONFIG, ...data };
+      } catch (err) {
+        console.warn("Could not load /api/config", err);
       }
     }
 
@@ -420,21 +736,6 @@
       renderListings();
     }
 
-    let APP_CONFIG = { country_code: "91", college_name: "PICT", currency: "₹" };
-
-    async function loadConfig() {
-      try {
-        const res = await fetch('/api/config');
-        const data = await res.json();
-        if (data) {
-          APP_CONFIG = { ...APP_CONFIG, ...data };
-        }
-      } catch (err) {
-        console.warn("Could not load /api/config, using defaults", err);
-      }
-    }
-    loadConfig();
-
     function getWhatsAppUrl(item) {
       const cc = APP_CONFIG.country_code || '91';
       const phone = (item.seller_contact || '').replace(/[^0-9]/g, '');
@@ -446,7 +747,7 @@
       const college = APP_CONFIG.college_name || 'Campus';
 
       const msg =
-        `👋 Hi ${seller}!
+`👋 Hi ${seller}!
 I saw your study material listing on ${college} Campus Marketplace:
 
 📚 *Item:* ${item.title}
@@ -466,6 +767,11 @@ Is this still available to collect on campus?`;
       const query = (document.getElementById('search-input').value || "").toLowerCase();
 
       const filtered = allListings.filter(item => {
+        // If "My Listings" tab is active, only show current user's listings
+        if (currentView === 'my') {
+          if (!currentUser || item.user_id !== currentUser.id) return false;
+        }
+
         const matchesDept = (selectedDepartment === "All" || item.department === selectedDepartment);
         const matchesQuery = !query ||
           (item.title && item.title.toLowerCase().includes(query)) ||
@@ -481,11 +787,33 @@ Is this still available to collect on campus?`;
       }
 
       empty.classList.add('hidden');
-      grid.innerHTML = filtered.map(item => `
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
-          <div class="h-48 bg-slate-100 flex items-center justify-center overflow-hidden border-b border-slate-100">
+      grid.innerHTML = filtered.map(item => {
+        const isOwner = currentUser && (item.user_id === currentUser.id);
+        const isSold = Boolean(item.is_sold);
+
+        return `
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col relative ${isSold ? 'opacity-85' : ''}">
+          <div class="h-48 bg-slate-100 flex items-center justify-center overflow-hidden border-b border-slate-100 relative">
             ${item.image_data_uri ? `<img src="${item.image_data_uri}" class="h-full w-full object-cover">` : `<i class="fa-solid fa-book text-slate-300 text-4xl"></i>`}
+            
+            ${isSold ? `
+              <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center">
+                <span class="px-4 py-1.5 bg-red-600 text-white text-xs font-black tracking-widest rounded-full uppercase shadow-lg border border-white/20">
+                  <i class="fa-solid fa-circle-check mr-1"></i> SOLD OUT
+                </span>
+              </div>
+            ` : ''}
+
+            ${isOwner ? `
+              <div class="absolute top-2 right-2 flex gap-1">
+                <button onclick="deleteItem(${item.id})" title="Delete Listing" 
+                  class="p-2 rounded-full bg-red-600/90 text-white hover:bg-red-700 shadow text-xs transition">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            ` : ''}
           </div>
+
           <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between gap-2 mb-2">
@@ -500,22 +828,41 @@ Is this still available to collect on campus?`;
               <p class="text-xs text-slate-500 mt-1 line-clamp-2">${item.description || 'No description provided.'}</p>
             </div>
 
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-              <div>
-                <span class="text-lg font-black text-emerald-600">₹${item.price_inr}</span>
-                ${item.original_mrp ? `<span class="text-xs text-slate-400 line-through ml-1.5">₹${item.original_mrp}</span>` : ''}
+            <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-lg font-black text-emerald-600">₹${item.price_inr}</span>
+                  ${item.original_mrp ? `<span class="text-xs text-slate-400 line-through ml-1.5">₹${item.original_mrp}</span>` : ''}
+                </div>
+                
+                ${isSold ? `
+                  <span class="px-3 py-1.5 bg-slate-200 text-slate-500 rounded-lg text-xs font-bold cursor-not-allowed">
+                    Sold to Junior
+                  </span>
+                ` : `
+                  <a href="${getWhatsAppUrl(item)}" target="_blank" 
+                     class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> Buy on WhatsApp
+                  </a>
+                `}
               </div>
-              <a href="${getWhatsAppUrl(item)}" 
-                 target="_blank" 
-                 class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
-                <i class="fa-brands fa-whatsapp text-sm"></i> Buy on WhatsApp
-              </a>
+
+              ${isOwner && !isSold ? `
+                <button onclick="markAsSold(${item.id})" 
+                  class="w-full mt-1 py-1.5 rounded-lg border border-amber-500 text-amber-700 hover:bg-amber-50 text-xs font-bold transition flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-check"></i> Mark as Sold
+                </button>
+              ` : ''}
             </div>
           </div>
         </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
+    // Initialize application
+    loadConfig();
+    checkAuth();
     fetchListings();
   </script>
 </body>
