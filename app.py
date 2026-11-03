@@ -689,13 +689,23 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
 # 6. Main Entry Point
 # ---------------------------------------------------------------------------
 def run_server(port: int = 8000):
-    server_address = ("127.0.0.1", port)
+    import socket
+    server_address = ("0.0.0.0", port)
     httpd = HTTPServer(server_address, MarketplaceHandler)
-    print(f"PICT Marketplace running at: http://localhost:{port}/")
+    local_ips = []
+    try:
+        local_ips = socket.gethostbyname_ex(socket.gethostname())[2]
+    except Exception:
+        pass
+    print(f"PICT Marketplace running at:")
+    print(f"  - Local:   http://localhost:{port}/")
+    for ip in local_ips:
+        if not ip.startswith("127."):
+            print(f"  - Network: http://{ip}:{port}/")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\\nShutting down server...")
+        print("\nShutting down server...")
         httpd.server_close()
 
 def run_test():
