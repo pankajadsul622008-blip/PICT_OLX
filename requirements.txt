@@ -1,1 +1,2 @@
 sarvamai>=0.1.43
+psycopg2-binary>=2.9.9

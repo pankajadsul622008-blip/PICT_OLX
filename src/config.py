@@ -30,7 +30,8 @@ if ENV_FILE.exists():
 HOST = os.environ.get("HOST", "0.0.0.0")
 PORT = int(os.environ.get("PORT", 8000))
 
-# Database Configuration
+# Database Configuration (Supabase PostgreSQL / local SQLite fallback)
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 DATABASE_NAME = os.environ.get("DATABASE_NAME", "listings.db")
 DB_PATH = BASE_DIR / DATABASE_NAME
 
