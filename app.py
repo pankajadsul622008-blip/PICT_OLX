@@ -1,4 +1,141 @@
-<!DOCTYPE html>
+"""
+PICT Campus Marketplace (OLX for PICT)
+--------------------------------------
+A single-file, self-contained study material marketplace for PICT students.
+Powered by Sarvam AI Vision (gemma4) and indicative Indic LLM capabilities.
+
+Usage:
+  python app.py              # Starts the web application at http://localhost:8000/
+  python app.py --test       # Verifies connection to Sarvam AI API
+  python app.py --cli <img_path>  # Scans an image and outputs structured JSON
+"""
+
+import os
+import sys
+import json
+import sqlite3
+import base64
+import mimetypes
+from pathlib import Path
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from sarvamai import SarvamAI
+
+# Fix Windows console UTF-8 output
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
+# ---------------------------------------------------------------------------
+# 1. Environment & Configuration
+# ---------------------------------------------------------------------------
+ENV_FILE = Path(__file__).parent / ".env"
+if ENV_FILE.exists():
+    with open(ENV_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                os.environ[k.strip()] = v.strip().strip("'\"")
+
+DB_PATH = Path(__file__).parent / "listings.db"
+
+def get_sarvam_client() -> SarvamAI:
+    api_key = os.environ.get("SARVAM_API_KEY")
+    if not api_key:
+        raise ValueError("SARVAM_API_KEY is not set. Please add it to your .env file or environment.")
+    return SarvamAI(api_subscription_key=api_key)
+
+# ---------------------------------------------------------------------------
+# 2. Database Initialization
+# ---------------------------------------------------------------------------
+def init_db():
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS listings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                subject TEXT,
+                department TEXT,
+                target_year TEXT,
+                semester TEXT,
+                material_type TEXT,
+                condition TEXT,
+                price_inr INTEGER,
+                original_mrp INTEGER,
+                description TEXT,
+                seller_name TEXT,
+                seller_contact TEXT,
+                image_data_uri TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.commit()
+
+init_db()
+
+# ---------------------------------------------------------------------------
+# 3. Sarvam AI Vision & Indic Extraction
+# ---------------------------------------------------------------------------
+def analyze_study_material_image(data_uri: str, model: str = "gemma4") -> dict:
+    """
+    Sends study material image to Sarvam AI Vision and extracts SPPU/PICT metadata.
+    """
+    client = get_sarvam_client()
+    system_prompt = (
+        "You are an AI assistant for a college study material marketplace at PICT "
+        "(Pune Institute of Computer Technology, affiliated with SPPU - Pune University). "
+        "A senior student is listing used study material (textbook, handwritten notes, "
+        "PYQ question booklet, lab manual, engineering drafter/kit).\n"
+        "Analyze the provided image and extract accurate details.\n"
+        "Return ONLY a valid JSON object with the following keys:\n"
+        "{\n"
+        '  "title": "Clean, descriptive title for the listing",\n'
+        '  "subject": "Subject name according to SPPU curriculum (e.g. Data Structures, OS, CN, TOC, EM-3)",\n'
+        '  "department": "One of: Computer Engineering, Information Technology, E&TC, AIDS, First Year (FE), General",\n'
+        '  "target_year": "One of: FE, SE, TE, BE",\n'
+        '  "semester": "Semester 1 through 8",\n'
+        '  "material_type": "One of: Textbook, Handwritten Notes, Question Bank / PYQ, Lab Manual, Tool / Instrument",\n'
+        '  "publisher_or_author": "e.g. Nirali Prakashan, TechKnowledge, Pearson, McGraw-Hill, or Senior Handwritten",\n'
+        '  "detected_condition": "One of: Like New, Good, Annotated / Highlighted, Fair / Worn",\n'
+        '  "suggested_price_inr": integer resale price in INR (40-60% off typical MRP),\n'
+        '  "estimated_mrp_inr": integer estimated original MRP in INR,\n'
+        '  "description": "A helpful 2-sentence description for juniors highlighting utility and condition",\n'
+        '  "search_tags": ["list", "of", "relevant", "keywords"]\n'
+        "}\n"
+        "Do not include any markdown backticks or extra text outside JSON."
+    )
+    
+    response = client.chat.completions_v2(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": system_prompt},
+                    {"type": "image_url", "image_url": {"url": data_uri}}
+                ]
+            }
+        ],
+        temperature=0.2
+    )
+    
+    content = response.choices[0].message.content.strip()
+    if content.startswith("```"):
+        lines = content.splitlines()
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        content = "\n".join(lines).strip()
+    return json.loads(content)
+
+# ---------------------------------------------------------------------------
+# 4. Embedded Frontend (HTML/JS/Tailwind CSS)
+# ---------------------------------------------------------------------------
+HTML_PAGE = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,24 +143,8 @@
   <title>PICT Campus Marketplace | Study Material OLX</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            pict: {
-              navy: '#1e3a8a',
-              gold: '#f59e0b',
-              accent: '#2563eb'
-            }
-          }
-        }
-      }
-    }
-  </script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
-
   <!-- Header -->
   <header class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -33,7 +154,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold tracking-tight">PICT Campus Marketplace</h1>
-          <p class="text-xs text-blue-200">Seniors $\rightarrow$ Juniors P2P Study Material Hub (Powered by Sarvam AI)</p>
+          <p class="text-xs text-blue-200">Seniors &rarr; Juniors P2P Study Material Hub (Powered by Sarvam AI)</p>
         </div>
       </div>
       <div class="flex items-center space-x-2">
@@ -48,7 +169,6 @@
   </header>
 
   <main class="max-w-6xl mx-auto px-4 py-8">
-
     <!-- LISTING VIEW (SENIOR) -->
     <section id="view-list" class="space-y-6">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
@@ -80,7 +200,6 @@
               <img id="image-preview" class="hidden max-h-64 rounded-lg object-contain shadow-sm border border-slate-200">
             </div>
 
-            <!-- AI Status Banner -->
             <div id="ai-loading" class="hidden p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center space-x-3 text-indigo-900">
               <i class="fa-solid fa-circle-notch fa-spin text-xl text-indigo-600"></i>
               <div>
@@ -100,7 +219,7 @@
               <div>
                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Listing Title</label>
                 <input type="text" id="title" required placeholder="e.g. Data Structures & Algorithms - Nirali Prakashan" 
-                       class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition">
+                       class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none transition">
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -209,7 +328,6 @@
           <h2 class="text-2xl font-bold text-slate-900">Study Materials Available at PICT</h2>
           <p class="text-slate-500 text-sm">Affordable books, notes, and lab instruments from your seniors</p>
         </div>
-        <!-- Department Filters -->
         <div class="flex flex-wrap gap-2 text-xs">
           <button onclick="filterDept('All')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-blue-700 text-white">All</button>
           <button onclick="filterDept('Computer Engineering')" class="dept-btn px-3 py-1.5 rounded-full font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-100">Comp</button>
@@ -220,17 +338,13 @@
         </div>
       </div>
 
-      <!-- Search Bar -->
       <div class="relative">
         <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
         <input type="text" id="search-input" oninput="renderListings()" placeholder="Search by subject (DSA, OS, TOC), book title, or author..." 
                class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 text-sm outline-none shadow-sm">
       </div>
 
-      <!-- Listings Grid -->
-      <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Rendered via JS -->
-      </div>
+      <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
       
       <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200">
         <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl mb-3">
@@ -243,7 +357,6 @@
         </button>
       </div>
     </section>
-
   </main>
 
   <script>
@@ -251,7 +364,6 @@
     let allListings = [];
     let selectedDepartment = "All";
 
-    // Tab switching
     function switchTab(tab) {
       const viewList = document.getElementById('view-list');
       const viewBrowse = document.getElementById('view-browse');
@@ -272,7 +384,6 @@
       }
     }
 
-    // Drag & Drop / File Input
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('file-input');
     const imagePreview = document.getElementById('image-preview');
@@ -355,7 +466,6 @@
       }
     }
 
-    // Submit Listing Form
     document.getElementById('listing-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const payload = {
@@ -382,7 +492,7 @@
         });
         const data = await res.json();
         if (data.success) {
-          alert("🎉 Listing published to PICT Marketplace!");
+          alert("Listing published to PICT Marketplace!");
           document.getElementById('listing-form').reset();
           imagePreview.classList.add('hidden');
           uploadPlaceholder.classList.remove('hidden');
@@ -397,7 +507,6 @@
       }
     });
 
-    // Fetch and render listings
     async function fetchListings() {
       try {
         const res = await fetch('/api/listings');
@@ -477,8 +586,148 @@
       `).join('');
     }
 
-    // Initial load
     fetchListings();
   </script>
 </body>
 </html>
+"""
+
+# ---------------------------------------------------------------------------
+# 5. HTTP Request Handler
+# ---------------------------------------------------------------------------
+class MarketplaceHandler(BaseHTTPRequestHandler):
+    def _send_json(self, data, status=200):
+        body = json.dumps(data, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.end_headers()
+
+    def do_GET(self):
+        if self.path in ("/", "/index.html"):
+            content = HTML_PAGE.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
+        elif self.path == "/api/listings":
+            with sqlite3.connect(DB_PATH) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM listings ORDER BY id DESC")
+                rows = [dict(r) for r in cursor.fetchall()]
+            self._send_json({"listings": rows})
+        else:
+            self.send_error(404, "Not Found")
+
+    def do_POST(self):
+        length = int(self.headers.get("Content-Length", 0))
+        post_data = self.rfile.read(length)
+        try:
+            payload = json.loads(post_data.decode("utf-8"))
+        except Exception:
+            self._send_json({"error": "Invalid JSON"}, status=400)
+            return
+
+        if self.path == "/api/analyze":
+            data_uri = payload.get("image_data_uri")
+            if not data_uri:
+                self._send_json({"error": "image_data_uri is required"}, status=400)
+                return
+            try:
+                analysis = analyze_study_material_image(data_uri)
+                self._send_json({"success": True, "analysis": analysis})
+            except Exception as e:
+                self._send_json({"error": str(e)}, status=500)
+
+        elif self.path == "/api/listings":
+            try:
+                with sqlite3.connect(DB_PATH) as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        INSERT INTO listings (
+                            title, subject, department, target_year, semester,
+                            material_type, condition, price_inr, original_mrp,
+                            description, seller_name, seller_contact, image_data_uri
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        payload.get("title", "Untitled Listing"),
+                        payload.get("subject", ""),
+                        payload.get("department", "General"),
+                        payload.get("target_year", "FE"),
+                        payload.get("semester", ""),
+                        payload.get("material_type", "Textbook"),
+                        payload.get("condition", "Good"),
+                        int(payload.get("price_inr") or 0),
+                        int(payload.get("original_mrp") or 0),
+                        payload.get("description", ""),
+                        payload.get("seller_name", "PICT Senior"),
+                        payload.get("seller_contact", ""),
+                        payload.get("image_data_uri", "")
+                    ))
+                    conn.commit()
+                    new_id = cursor.lastrowid
+                self._send_json({"success": True, "id": new_id})
+            except Exception as e:
+                self._send_json({"error": str(e)}, status=500)
+        else:
+            self.send_error(404, "Not Found")
+
+# ---------------------------------------------------------------------------
+# 6. Main Entry Point
+# ---------------------------------------------------------------------------
+def run_server(port: int = 8000):
+    server_address = ("127.0.0.1", port)
+    httpd = HTTPServer(server_address, MarketplaceHandler)
+    print(f"PICT Marketplace running at: http://localhost:{port}/")
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\\nShutting down server...")
+        httpd.server_close()
+
+def run_test():
+    client = get_sarvam_client()
+    print("Testing connection with sarvam-105b-conversations...")
+    res = client.chat.completions(
+        model="sarvam-105b-conversations",
+        messages=[{"role": "user", "content": "Hello!"}]
+    )
+    print("Response:", res.choices[0].message.content)
+
+def run_cli_scan(image_path: str):
+    path = Path(image_path)
+    if not path.exists():
+        print(f"File not found: {image_path}")
+        return
+    mime, _ = mimetypes.guess_type(image_path)
+    mime = mime or "image/jpeg"
+    with open(path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode("utf-8")
+    data_uri = f"data:{mime};base64,{b64}"
+    print(f"Analyzing {image_path} with Sarvam AI Vision...")
+    result = analyze_study_material_image(data_uri)
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--test":
+        run_test()
+    elif len(sys.argv) > 2 and sys.argv[1] == "--cli":
+        run_cli_scan(sys.argv[2])
+    else:
+        port = 8000
+        if len(sys.argv) > 1 and sys.argv[1].isdigit():
+            port = int(sys.argv[1])
+        run_server(port)
