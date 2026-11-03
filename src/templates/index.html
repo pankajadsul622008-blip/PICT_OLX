@@ -7,6 +7,7 @@
   <title>PICT Campus Marketplace | Study Material OLX</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
@@ -437,6 +438,28 @@
     let APP_CONFIG = { country_code: "91", college_name: "PICT", currency: "₹" };
 
     // -------------------------------------------------------------
+    // Stylish Toast & Dialog Helpers (SweetAlert2)
+    // -------------------------------------------------------------
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      customClass: {
+        popup: 'rounded-2xl shadow-xl border border-slate-100 text-sm font-sans'
+      },
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+      }
+    });
+
+    function showToast(title, icon = 'success') {
+      Toast.fire({ icon, title });
+    }
+
+    // -------------------------------------------------------------
     // Auth Management
     // -------------------------------------------------------------
     async function checkAuth() {
@@ -541,6 +564,7 @@
           localStorage.setItem('pict_token', data.token);
           updateAuthUI(data.user);
           closeAuthModal();
+          showToast(`Welcome back, ${data.user.name || 'Senior'}!`, 'success');
         } else {
           errBox.innerText = data.error || "Login failed.";
           errBox.classList.remove('hidden');
@@ -570,6 +594,7 @@
           localStorage.setItem('pict_token', data.token);
           updateAuthUI(data.user);
           closeAuthModal();
+          showToast(`Welcome to PICT Marketplace, ${data.user.name || 'Senior'}! 🎉`, 'success');
         } else {
           errBox.innerText = data.error || "Registration failed.";
           errBox.classList.remove('hidden');
@@ -592,6 +617,7 @@
       }
       localStorage.removeItem('pict_token');
       updateAuthUI(null);
+      showToast("Logged out successfully.", "info");
     }
 
     // -------------------------------------------------------------
@@ -673,7 +699,7 @@
 
     function handleFile(file) {
       if (!file.type.startsWith('image/')) {
-        alert("Please upload an image file (JPG, PNG).");
+        showToast("Please upload an image file (JPG, PNG).", "warning");
         return;
       }
       const reader = new FileReader();
@@ -709,12 +735,19 @@
           document.getElementById('price_inr').value = a.suggested_price_inr || '';
           document.getElementById('original_mrp').value = a.estimated_mrp_inr || '';
           document.getElementById('description').value = a.description || '';
+          showToast("AI Vision scanned details successfully! ✨", "success");
         } else {
-          alert("Sarvam AI could not parse the image: " + (data.error || "Unknown error"));
+          Swal.fire({
+            title: 'AI Scan Notice',
+            text: data.error || "Could not parse image metadata.",
+            icon: 'warning',
+            confirmButtonColor: '#1d4ed8',
+            customClass: { popup: 'rounded-2xl shadow-xl' }
+          });
         }
       } catch (err) {
         console.error(err);
-        alert("Error connecting to Sarvam AI server.");
+        showToast("Error connecting to Sarvam AI server.", "error");
       } finally {
         aiLoading.classList.add('hidden');
       }
@@ -757,7 +790,13 @@
         });
         const data = await res.json();
         if (data.success) {
-          alert("Listing published successfully to PICT Marketplace!");
+          Swal.fire({
+            icon: 'success',
+            title: 'Published Successfully! 🎉',
+            text: 'Your study material is now live on the PICT Marketplace.',
+            confirmButtonColor: '#1d4ed8',
+            customClass: { popup: 'rounded-2xl shadow-xl' }
+          });
           document.getElementById('listing-form').reset();
           imagePreview.classList.add('hidden');
           uploadPlaceholder.classList.remove('hidden');
@@ -765,10 +804,10 @@
           currentImageUri = "";
           switchTab('browse');
         } else {
-          alert("Error saving listing: " + (data.error || "Unknown error"));
+          showToast("Error saving listing: " + (data.error || "Unknown error"), "error");
         }
       } catch (err) {
-        alert("Failed to save listing: " + err.message);
+        showToast("Failed to save listing: " + err.message, "error");
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Publish to PICT Marketplace</span>`;
@@ -778,6 +817,7 @@
     async function toggleSold(id, soldStatus) {
       const token = localStorage.getItem('pict_token');
       if (!token) {
+        showToast("Please log in first", "warning");
         openAuthModal('login');
         return;
       }
@@ -792,19 +832,33 @@
         });
         const data = await res.json();
         if (data.success) {
+          showToast(soldStatus ? "Listing marked as SOLD! 🏷️" : "Listing marked as Available! ✨", "success");
           fetchListings();
         } else {
-          alert("Action failed: " + (data.error || "Unauthorized"));
+          showToast(data.error || "Action failed", "error");
         }
       } catch (e) {
-        alert("Error: " + e.message);
+        showToast(e.message, "error");
       }
     }
 
     async function deleteItem(id) {
-      if (!confirm("Are you sure you want to permanently delete this listing?")) return;
+      const result = await Swal.fire({
+        title: 'Delete Listing?',
+        text: 'Are you sure you want to permanently delete this study material?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel',
+        customClass: { popup: 'rounded-2xl shadow-xl' }
+      });
+      if (!result.isConfirmed) return;
+
       const token = localStorage.getItem('pict_token');
       if (!token) {
+        showToast("Please log in first", "warning");
         openAuthModal('login');
         return;
       }
@@ -815,12 +869,13 @@
         });
         const data = await res.json();
         if (data.success) {
+          showToast("Listing deleted successfully! 🗑️", "success");
           fetchListings();
         } else {
-          alert("Could not delete listing: " + (data.error || "Unauthorized"));
+          showToast(data.error || "Could not delete listing", "error");
         }
       } catch (e) {
-        alert("Error: " + e.message);
+        showToast(e.message, "error");
       }
     }
 
@@ -852,6 +907,7 @@
       const id = document.getElementById('edit-id').value;
       const token = localStorage.getItem('pict_token');
       if (!token) {
+        showToast("Please log in first", "warning");
         openAuthModal('login');
         return;
       }
@@ -885,12 +941,13 @@
         const data = await res.json();
         if (data.success) {
           closeEditModal();
+          showToast("Listing updated successfully! ✨", "success");
           fetchListings();
         } else {
-          alert("Edit failed: " + (data.error || "Unauthorized"));
+          showToast(data.error || "Edit failed", "error");
         }
       } catch (err) {
-        alert("Error updating listing: " + err.message);
+        showToast(err.message, "error");
       } finally {
         saveBtn.disabled = false;
         saveBtn.innerText = "Save Changes";
