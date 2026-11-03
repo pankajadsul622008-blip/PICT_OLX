@@ -4,6 +4,8 @@ A single-file, self-contained peer-to-peer study material marketplace built excl
 
 Powered by **Sarvam AI Vision (`gemma4`)** for instant, zero-typing study material listing.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/pankajadsul622008-blip/PICT_OLX)
+
 ---
 
 ## ⚡ Key Features
@@ -25,12 +27,12 @@ Powered by **Sarvam AI Vision (`gemma4`)** for instant, zero-typing study materi
 
 ---
 
-## 🚀 Quickstart
+## 🚀 Quickstart (Local)
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/<your-username>/pict-campus-marketplace.git
-cd pict-campus-marketplace
+git clone https://github.com/pankajadsul622008-blip/PICT_OLX.git
+cd PICT_OLX
 ```
 
 ### 2. Install dependencies
@@ -56,6 +58,31 @@ Open **[http://localhost:8000/](http://localhost:8000/)** in your browser!
 python app.py --test            # Test API connection with sarvam-105b-conversations
 python app.py --cli sample.jpg  # Scan a book image directly from the terminal
 ```
+
+---
+
+## 🌐 Cloud Deployment (Live Public Link via GitHub)
+
+Because this app runs a dynamic Python backend (`app.py` with SQLite & Sarvam AI SDK), it cannot run on static-only hosts like **GitHub Pages**. Instead, it connects directly from your GitHub repository to **Render** for free 24/7 cloud hosting.
+
+### Method 1: 1-Click Deploy via Render Blueprint
+1. Click the button below:
+   [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/pankajadsul622008-blip/PICT_OLX)
+2. Sign in with GitHub (`pankajadsul622008-blip`).
+3. Set your `SARVAM_API_KEY` under Environment Variables.
+4. Click **Create Web Service**. Render will automatically build and assign a free HTTPS URL.
+
+### Method 2: Manual Setup on Render
+1. Go to [Render Dashboard](https://dashboard.render.com/) and click **New +** > **Web Service**.
+2. Connect your GitHub repository: `pankajadsul622008-blip/PICT_OLX`.
+3. Set the following settings:
+   - **Environment**: `Python`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `python app.py`
+4. Under **Advanced** > **Add Environment Variable**:
+   - Key: `SARVAM_API_KEY`
+   - Value: `<your_sarvam_api_key>`
+5. Click **Create Web Service**. Your app is live!
 
 ---
 
