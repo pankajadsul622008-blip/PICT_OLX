@@ -1,0 +1,3 @@
+"""
+PICT Campus Marketplace package.
+"""
