@@ -2,7 +2,7 @@
 PICT Campus Marketplace
 -----------------------
 A study material marketplace for college students.
-Powered by Sarvam AI Vision.
+Powered by Sarvam AI Vision, Supabase PostgreSQL, and Cloudinary.
 
 Usage:
   python app.py                   # Starts the web application
@@ -22,10 +22,12 @@ from src.config import HOST, PORT, COLLEGE_NAME
 from src.database import init_db
 from src.handlers.http_handler import MarketplaceHandler
 from src.services.sarvam_service import analyze_study_material_image, test_connection
+from src.services.auth_service import ensure_admin_user
 
 def run_server(host: str = HOST, port: int = PORT):
     """Starts the HTTP server and prints accessible URLs."""
     init_db()
+    ensure_admin_user()
     server_address = (host, port)
     httpd = HTTPServer(server_address, MarketplaceHandler)
     

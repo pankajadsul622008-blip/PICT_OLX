@@ -12,7 +12,7 @@ from ..config import (
     WHATSAPP_DEFAULT_COUNTRY_CODE,
     DEFAULT_CURRENCY,
 )
-from ..database import get_all_listings, create_listing, mark_listing_sold, delete_listing
+from ..database import get_all_listings, create_listing, update_listing, mark_listing_sold, delete_listing
 from ..services.sarvam_service import analyze_study_material_image
 from ..services.cloudinary_service import upload_image
 from ..services.auth_service import register_user, login_user, get_user_from_token, logout_user
@@ -21,13 +21,13 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
     """Handles HTTP requests for Campus Marketplace."""
 
     def _send_json(self, data, status=200):
-        body = json.dumps(data, ensure_ascii=False).encode("utf-8")
+        body = json.dumps(data, ensure_ascii=False, default=str).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
         self.end_headers()
         self.wfile.write(body)
 
@@ -42,7 +42,7 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
         self.end_headers()
 
     def do_GET(self):
@@ -172,7 +172,30 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send_json({"error": str(e)}, status=500)
 
-        # API: Mark listing as sold
+        # API: Edit listing content (Owner or Admin)
+        elif self.path.startswith("/api/listings/") and self.path.endswith("/edit"):
+            parts = self.path.strip("/").split("/")
+            if len(parts) == 4 and parts[2].isdigit():
+                listing_id = int(parts[2])
+                user = self._get_auth_user()
+                if not user:
+                    self._send_json({"error": "Authentication required"}, status=401)
+                    return
+                is_admin = bool(user.get("is_admin", False))
+                # If new photo uploaded, send to Cloudinary
+                raw_image = payload.get("image_data_uri", "")
+                if raw_image and raw_image.startswith("data:image"):
+                    payload["image_data_uri"] = upload_image(raw_image)
+
+                ok = update_listing(listing_id, payload, user_id=user["id"], is_admin=is_admin)
+                if ok:
+                    self._send_json({"success": True, "message": "Listing updated"})
+                else:
+                    self._send_json({"error": "Listing not found or unauthorized"}, status=403)
+            else:
+                self.send_error(400, "Invalid path")
+
+        # API: Mark listing as sold or available
         elif self.path.startswith("/api/listings/") and self.path.endswith("/sold"):
             parts = self.path.strip("/").split("/")
             if len(parts) == 4 and parts[2].isdigit():
@@ -181,9 +204,11 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
                 if not user:
                     self._send_json({"error": "Authentication required"}, status=401)
                     return
-                ok = mark_listing_sold(listing_id, user["id"])
+                is_admin = bool(user.get("is_admin", False))
+                sold_val = payload.get("is_sold", True) if isinstance(payload, dict) and "is_sold" in payload else True
+                ok = mark_listing_sold(listing_id, user["id"], is_admin=is_admin, sold_status=sold_val)
                 if ok:
-                    self._send_json({"success": True, "message": "Marked as sold"})
+                    self._send_json({"success": True, "message": "Listing status updated"})
                 else:
                     self._send_json({"error": "Listing not found or unauthorized"}, status=403)
             else:
@@ -193,7 +218,7 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
             self.send_error(404, "Not Found")
 
     def do_DELETE(self):
-        # API: Delete listing
+        # API: Delete listing (Owner or Admin)
         if self.path.startswith("/api/listings/"):
             parts = self.path.strip("/").split("/")
             if len(parts) == 3 and parts[2].isdigit():
@@ -202,7 +227,8 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
                 if not user:
                     self._send_json({"error": "Authentication required"}, status=401)
                     return
-                ok = delete_listing(listing_id, user["id"])
+                is_admin = bool(user.get("is_admin", False))
+                ok = delete_listing(listing_id, user["id"], is_admin=is_admin)
                 if ok:
                     self._send_json({"success": True, "message": "Listing deleted"})
                 else:

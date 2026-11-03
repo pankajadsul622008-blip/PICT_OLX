@@ -30,6 +30,10 @@ if ENV_FILE.exists():
 HOST = os.environ.get("HOST", "0.0.0.0")
 PORT = int(os.environ.get("PORT", 8000))
 
+# Administrator Settings
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@pict.edu").strip().lower()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
+
 # Database Configuration (Supabase PostgreSQL / local SQLite fallback)
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 DATABASE_NAME = os.environ.get("DATABASE_NAME", "listings.db")

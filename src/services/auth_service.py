@@ -5,7 +5,7 @@ import secrets
 from typing import Optional, Dict, Any
 
 from ..database import USE_POSTGRES, DB_PATH
-from ..config import DATABASE_URL
+from ..config import DATABASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD
 
 if USE_POSTGRES:
     import psycopg2
@@ -28,12 +28,62 @@ def verify_password(password: str, stored_hash: str) -> bool:
     except Exception:
         return False
 
+def ensure_admin_user():
+    """Seeds or promotes the configured admin user."""
+    admin_email = ADMIN_EMAIL.strip().lower()
+    admin_hash = hash_password(ADMIN_PASSWORD)
+
+    if USE_POSTGRES:
+        try:
+            with psycopg2.connect(DATABASE_URL) as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("SELECT id FROM users WHERE email = %s", (admin_email,))
+                    existing = cur.fetchone()
+                    if existing:
+                        cur.execute("""
+                            UPDATE users 
+                            SET is_admin = TRUE, password_hash = %s, name = 'Campus Administrator' 
+                            WHERE email = %s
+                        """, (admin_hash, admin_email))
+                    else:
+                        cur.execute("""
+                            INSERT INTO users (email, password_hash, name, phone, is_admin)
+                            VALUES (%s, %s, 'Campus Administrator', '0000000000', TRUE)
+                        """, (admin_email, admin_hash))
+                    conn.commit()
+            print(f"Admin account verified: {admin_email}")
+            return
+        except Exception as e:
+            print(f"Warning: Could not seed admin in Supabase ({e})")
+
+    # SQLite
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM users WHERE email = ?", (admin_email,))
+            if cur.fetchone():
+                cur.execute("""
+                    UPDATE users 
+                    SET is_admin = 1, password_hash = ?, name = 'Campus Administrator' 
+                    WHERE email = ?
+                """, (admin_hash, admin_email))
+            else:
+                cur.execute("""
+                    INSERT INTO users (email, password_hash, name, phone, is_admin)
+                    VALUES (?, ?, 'Campus Administrator', '0000000000', 1)
+                """, (admin_email, admin_hash))
+            conn.commit()
+        print(f"Admin account verified (SQLite): {admin_email}")
+    except Exception as e:
+        print(f"Warning: Could not seed admin in SQLite ({e})")
+
 def register_user(email: str, password: str, name: str, phone: str = "") -> Dict[str, Any]:
     """Registers a new user and returns user info + session token."""
     email = email.strip().lower()
     if not email or not password or not name:
         raise ValueError("Email, password, and name are required.")
 
+    is_admin = (email == ADMIN_EMAIL.strip().lower())
     pwd_hash = hash_password(password)
 
     if USE_POSTGRES:
@@ -45,11 +95,12 @@ def register_user(email: str, password: str, name: str, phone: str = "") -> Dict
                     raise ValueError("An account with this email already exists.")
 
                 cur.execute("""
-                    INSERT INTO users (email, password_hash, name, phone)
-                    VALUES (%s, %s, %s, %s)
-                    RETURNING id, email, name, phone;
-                """, (email, pwd_hash, name, phone))
+                    INSERT INTO users (email, password_hash, name, phone, is_admin)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id, email, name, phone, is_admin;
+                """, (email, pwd_hash, name, phone, is_admin))
                 user = dict(cur.fetchone())
+                user["is_admin"] = bool(user.get("is_admin", False))
 
                 token = secrets.token_hex(32)
                 cur.execute("INSERT INTO sessions (token, user_id) VALUES (%s, %s)", (token, user["id"]))
@@ -66,14 +117,14 @@ def register_user(email: str, password: str, name: str, phone: str = "") -> Dict
             raise ValueError("An account with this email already exists.")
 
         cur.execute("""
-            INSERT INTO users (email, password_hash, name, phone)
-            VALUES (?, ?, ?, ?)
-        """, (email, pwd_hash, name, phone))
+            INSERT INTO users (email, password_hash, name, phone, is_admin)
+            VALUES (?, ?, ?, ?, ?)
+        """, (email, pwd_hash, name, phone, 1 if is_admin else 0))
         user_id = cur.lastrowid
         token = secrets.token_hex(32)
         cur.execute("INSERT INTO sessions (token, user_id) VALUES (?, ?)", (token, user_id))
         conn.commit()
-        return {"id": user_id, "email": email, "name": name, "phone": phone, "token": token}
+        return {"id": user_id, "email": email, "name": name, "phone": phone, "is_admin": is_admin, "token": token}
 
 def login_user(email: str, password: str) -> Dict[str, Any]:
     """Authenticates user and returns user info + new session token."""
@@ -89,6 +140,9 @@ def login_user(email: str, password: str) -> Dict[str, Any]:
 
                 user = dict(user)
                 user.pop("password_hash", None)
+                if user.get("created_at"):
+                    user["created_at"] = str(user["created_at"])
+                user["is_admin"] = bool(user.get("is_admin", False))
                 token = secrets.token_hex(32)
                 cur.execute("INSERT INTO sessions (token, user_id) VALUES (%s, %s)", (token, user["id"]))
                 conn.commit()
@@ -105,6 +159,7 @@ def login_user(email: str, password: str) -> Dict[str, Any]:
 
         user = dict(row)
         user.pop("password_hash", None)
+        user["is_admin"] = bool(user.get("is_admin", 0))
         token = secrets.token_hex(32)
         cur.execute("INSERT INTO sessions (token, user_id) VALUES (?, ?)", (token, user["id"]))
         conn.commit()
@@ -120,7 +175,7 @@ def get_user_from_token(token: str) -> Optional[Dict[str, Any]]:
         with psycopg2.connect(DATABASE_URL) as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("""
-                    SELECT u.id, u.email, u.name, u.phone, u.created_at
+                    SELECT u.id, u.email, u.name, u.phone, u.is_admin, u.created_at
                     FROM sessions s
                     JOIN users u ON s.user_id = u.id
                     WHERE s.token = %s;
@@ -130,6 +185,7 @@ def get_user_from_token(token: str) -> Optional[Dict[str, Any]]:
                     res = dict(row)
                     if res.get("created_at"):
                         res["created_at"] = str(res["created_at"])
+                    res["is_admin"] = bool(res.get("is_admin", False))
                     return res
                 return None
 
@@ -137,13 +193,17 @@ def get_user_from_token(token: str) -> Optional[Dict[str, Any]]:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         cur.execute("""
-            SELECT u.id, u.email, u.name, u.phone, u.created_at
+            SELECT u.id, u.email, u.name, u.phone, u.is_admin, u.created_at
             FROM sessions s
             JOIN users u ON s.user_id = u.id
             WHERE s.token = ?;
         """, (token,))
         row = cur.fetchone()
-        return dict(row) if row else None
+        if row:
+            res = dict(row)
+            res["is_admin"] = bool(res.get("is_admin", 0))
+            return res
+        return None
 
 def logout_user(token: str) -> bool:
     """Removes the session token."""

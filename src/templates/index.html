@@ -48,6 +48,9 @@
         </div>
 
         <div id="auth-logged-in" class="hidden flex items-center space-x-2 ml-2">
+          <span id="admin-badge" class="hidden px-2 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-black tracking-wider uppercase shadow-sm">
+            <i class="fa-solid fa-shield-halved mr-1"></i>ADMIN
+          </span>
           <span id="user-display-name" class="text-xs font-medium text-amber-300"></span>
           <button onclick="handleLogout()" title="Logout"
             class="p-1.5 text-xs rounded-lg text-blue-200 hover:text-white hover:bg-white/10 transition">
@@ -274,7 +277,7 @@
       <!-- Login Form -->
       <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">College Email / Username</label>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email / Username</label>
           <input type="email" id="login-email" required placeholder="name@pict.edu"
             class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
         </div>
@@ -287,6 +290,7 @@
           class="w-full py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm shadow transition">
           Sign In
         </button>
+        <p class="text-[11px] text-center text-slate-400">Admin email: <code>admin@pict.edu</code></p>
       </form>
 
       <!-- Register Form -->
@@ -319,15 +323,116 @@
     </div>
   </div>
 
+  <!-- EDIT LISTING MODAL (FOR OWNER & ADMIN) -->
+  <div id="edit-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeEditModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <h3 class="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+        <i class="fa-solid fa-pen-to-square text-blue-600"></i> Edit Listing Content
+      </h3>
+      <p class="text-xs text-slate-500 mb-4">Modify listing details. Only the owner or campus admin can perform this.</p>
+
+      <form id="edit-form" onsubmit="handleSaveEdit(event)" class="space-y-4">
+        <input type="hidden" id="edit-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Title</label>
+          <input type="text" id="edit-title" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Subject</label>
+            <input type="text" id="edit-subject" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Department</label>
+            <select id="edit-department" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none bg-white">
+              <option value="Computer Engineering">Computer Engineering</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="E&TC">Electronics & Telecom (E&TC)</option>
+              <option value="AIDS">Artificial Intelligence & DS</option>
+              <option value="First Year (FE)">First Year (FE)</option>
+              <option value="General">General / All Branches</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Year</label>
+            <select id="edit-target-year" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none bg-white">
+              <option value="FE">FE</option>
+              <option value="SE">SE</option>
+              <option value="TE">TE</option>
+              <option value="BE">BE</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Semester</label>
+            <input type="text" id="edit-semester" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Type</label>
+            <select id="edit-material-type" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none bg-white">
+              <option value="Textbook">Textbook</option>
+              <option value="Handwritten Notes">Notes</option>
+              <option value="Question Bank / PYQ">PYQ</option>
+              <option value="Lab Manual">Lab Manual</option>
+              <option value="Tool / Instrument">Tool / Drafter</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Condition</label>
+            <select id="edit-condition" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none bg-white">
+              <option value="Like New">Like New</option>
+              <option value="Good">Good</option>
+              <option value="Annotated / Highlighted">Annotated</option>
+              <option value="Fair / Worn">Fair / Worn</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Resale Price (₹)</label>
+            <input type="number" id="edit-price" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none font-bold text-emerald-700">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Original MRP (₹)</label>
+            <input type="number" id="edit-mrp" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none text-slate-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Description</label>
+          <textarea id="edit-description" rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none"></textarea>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeEditModal()" class="flex-1 py-2 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-100">
+            Cancel
+          </button>
+          <button type="submit" id="save-edit-btn" class="flex-1 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold shadow">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
-    PICT Campus Marketplace &bull; Peer-to-Peer Study Hub &bull; Powered by Sarvam AI & Supabase
+    PICT Campus Marketplace &bull; Peer-to-Peer Study Hub &bull; Powered by Sarvam AI, Supabase & Cloudinary
   </footer>
 
   <script>
     let currentImageUri = "";
     let allListings = [];
     let selectedDepartment = "All";
-    let currentView = "browse"; // 'browse', 'list', 'my'
+    let currentView = "browse";
     let currentUser = null;
     let APP_CONFIG = { country_code: "91", college_name: "PICT", currency: "₹" };
 
@@ -361,6 +466,7 @@
       const loggedOutBox = document.getElementById('auth-logged-out');
       const loggedInBox = document.getElementById('auth-logged-in');
       const userDisplayName = document.getElementById('user-display-name');
+      const adminBadge = document.getElementById('admin-badge');
       const myBtn = document.getElementById('tab-my-btn');
 
       if (user) {
@@ -369,12 +475,19 @@
         userDisplayName.innerText = `👋 ${user.name.split(' ')[0]}`;
         myBtn.classList.remove('hidden');
 
+        if (user.is_admin) {
+          adminBadge.classList.remove('hidden');
+        } else {
+          adminBadge.classList.add('hidden');
+        }
+
         // Auto-populate listing form fields
         if (user.name) document.getElementById('seller_name').value = user.name;
         if (user.phone) document.getElementById('seller_contact').value = user.phone;
       } else {
         loggedOutBox.classList.remove('hidden');
         loggedInBox.classList.add('hidden');
+        adminBadge.classList.add('hidden');
         myBtn.classList.add('hidden');
         if (currentView === 'my') switchTab('browse');
       }
@@ -615,7 +728,7 @@
       const token = localStorage.getItem('pict_token');
       const submitBtn = document.getElementById('submit-btn');
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Uploading to Cloud & Publishing...</span>`;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Uploading to Cloudinary & Publishing...</span>`;
 
       const payload = {
         title: document.getElementById('title').value,
@@ -662,19 +775,26 @@
       }
     });
 
-    async function markAsSold(id) {
-      if (!confirm("Are you sure you want to mark this item as SOLD?")) return;
+    async function toggleSold(id, soldStatus) {
       const token = localStorage.getItem('pict_token');
+      if (!token) {
+        openAuthModal('login');
+        return;
+      }
       try {
         const res = await fetch(`/api/listings/${id}/sold`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify({ is_sold: soldStatus })
         });
         const data = await res.json();
         if (data.success) {
           fetchListings();
         } else {
-          alert("Could not mark as sold: " + (data.error || "Unauthorized"));
+          alert("Action failed: " + (data.error || "Unauthorized"));
         }
       } catch (e) {
         alert("Error: " + e.message);
@@ -682,8 +802,12 @@
     }
 
     async function deleteItem(id) {
-      if (!confirm("Are you sure you want to delete this listing permanently?")) return;
+      if (!confirm("Are you sure you want to permanently delete this listing?")) return;
       const token = localStorage.getItem('pict_token');
+      if (!token) {
+        openAuthModal('login');
+        return;
+      }
       try {
         const res = await fetch(`/api/listings/${id}`, {
           method: 'DELETE',
@@ -697,6 +821,79 @@
         }
       } catch (e) {
         alert("Error: " + e.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Edit Modal Logic (Owner & Admin)
+    // -------------------------------------------------------------
+    function openEditModal(item) {
+      document.getElementById('edit-id').value = item.id;
+      document.getElementById('edit-title').value = item.title || '';
+      document.getElementById('edit-subject').value = item.subject || '';
+      document.getElementById('edit-department').value = item.department || 'General';
+      document.getElementById('edit-target-year').value = item.target_year || 'FE';
+      document.getElementById('edit-semester').value = item.semester || '';
+      document.getElementById('edit-material-type').value = item.material_type || 'Textbook';
+      document.getElementById('edit-condition').value = item.condition || 'Good';
+      document.getElementById('edit-price').value = item.price_inr || '';
+      document.getElementById('edit-mrp').value = item.original_mrp || '';
+      document.getElementById('edit-description').value = item.description || '';
+
+      document.getElementById('edit-modal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.add('hidden');
+    }
+
+    async function handleSaveEdit(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-id').value;
+      const token = localStorage.getItem('pict_token');
+      if (!token) {
+        openAuthModal('login');
+        return;
+      }
+
+      const saveBtn = document.getElementById('save-edit-btn');
+      saveBtn.disabled = true;
+      saveBtn.innerText = "Saving...";
+
+      const payload = {
+        title: document.getElementById('edit-title').value,
+        subject: document.getElementById('edit-subject').value,
+        department: document.getElementById('edit-department').value,
+        target_year: document.getElementById('edit-target-year').value,
+        semester: document.getElementById('edit-semester').value,
+        material_type: document.getElementById('edit-material-type').value,
+        condition: document.getElementById('edit-condition').value,
+        price_inr: document.getElementById('edit-price').value,
+        original_mrp: document.getElementById('edit-mrp').value,
+        description: document.getElementById('edit-description').value
+      };
+
+      try {
+        const res = await fetch(`/api/listings/${id}/edit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeEditModal();
+          fetchListings();
+        } else {
+          alert("Edit failed: " + (data.error || "Unauthorized"));
+        }
+      } catch (err) {
+        alert("Error updating listing: " + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = "Save Changes";
       }
     }
 
@@ -767,7 +964,6 @@ Is this still available to collect on campus?`;
       const query = (document.getElementById('search-input').value || "").toLowerCase();
 
       const filtered = allListings.filter(item => {
-        // If "My Listings" tab is active, only show current user's listings
         if (currentView === 'my') {
           if (!currentUser || item.user_id !== currentUser.id) return false;
         }
@@ -789,10 +985,15 @@ Is this still available to collect on campus?`;
       empty.classList.add('hidden');
       grid.innerHTML = filtered.map(item => {
         const isOwner = currentUser && (item.user_id === currentUser.id);
+        const isAdmin = currentUser && Boolean(currentUser.is_admin);
+        const canManage = isOwner || isAdmin;
         const isSold = Boolean(item.is_sold);
 
+        // Escape JSON for onclick
+        const itemJson = JSON.stringify(item).replace(/"/g, '&quot;');
+
         return `
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col relative ${isSold ? 'opacity-85' : ''}">
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col relative ${isSold ? 'opacity-90 bg-slate-50/80' : ''}">
           <div class="h-48 bg-slate-100 flex items-center justify-center overflow-hidden border-b border-slate-100 relative">
             ${item.image_data_uri ? `<img src="${item.image_data_uri}" class="h-full w-full object-cover">` : `<i class="fa-solid fa-book text-slate-300 text-4xl"></i>`}
             
@@ -804,10 +1005,14 @@ Is this still available to collect on campus?`;
               </div>
             ` : ''}
 
-            ${isOwner ? `
-              <div class="absolute top-2 right-2 flex gap-1">
-                <button onclick="deleteItem(${item.id})" title="Delete Listing" 
-                  class="p-2 rounded-full bg-red-600/90 text-white hover:bg-red-700 shadow text-xs transition">
+            ${canManage ? `
+              <div class="absolute top-2 right-2 flex gap-1 z-10">
+                <button onclick="openEditModal(${itemJson})" title="Edit Content (Admin/Owner)" 
+                  class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow text-xs transition">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button onclick="deleteItem(${item.id})" title="Delete Listing (Admin/Owner)" 
+                  class="p-2 rounded-full bg-red-600 text-white hover:bg-red-700 shadow text-xs transition">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </div>
@@ -837,7 +1042,7 @@ Is this still available to collect on campus?`;
                 
                 ${isSold ? `
                   <span class="px-3 py-1.5 bg-slate-200 text-slate-500 rounded-lg text-xs font-bold cursor-not-allowed">
-                    Sold to Junior
+                    Sold Out
                   </span>
                 ` : `
                   <a href="${getWhatsAppUrl(item)}" target="_blank" 
@@ -847,11 +1052,20 @@ Is this still available to collect on campus?`;
                 `}
               </div>
 
-              ${isOwner && !isSold ? `
-                <button onclick="markAsSold(${item.id})" 
-                  class="w-full mt-1 py-1.5 rounded-lg border border-amber-500 text-amber-700 hover:bg-amber-50 text-xs font-bold transition flex items-center justify-center gap-1">
-                  <i class="fa-solid fa-check"></i> Mark as Sold
-                </button>
+              ${canManage ? `
+                <div class="pt-1">
+                  ${isSold ? `
+                    <button onclick="toggleSold(${item.id}, false)" 
+                      class="w-full py-1.5 rounded-lg border border-emerald-500 text-emerald-700 hover:bg-emerald-50 text-xs font-bold transition flex items-center justify-center gap-1">
+                      <i class="fa-solid fa-rotate-left"></i> Mark as Available
+                    </button>
+                  ` : `
+                    <button onclick="toggleSold(${item.id}, true)" 
+                      class="w-full py-1.5 rounded-lg border border-amber-500 text-amber-700 hover:bg-amber-50 text-xs font-bold transition flex items-center justify-center gap-1">
+                      <i class="fa-solid fa-check"></i> Mark as Sold
+                    </button>
+                  `}
+                </div>
               ` : ''}
             </div>
           </div>
