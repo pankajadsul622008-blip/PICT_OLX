@@ -737,7 +737,7 @@ if __name__ == "__main__":
     elif len(sys.argv) > 2 and sys.argv[1] == "--cli":
         run_cli_scan(sys.argv[2])
     else:
-        port = 8000
+        port = int(os.environ.get("PORT", 8000))
         if len(sys.argv) > 1 and sys.argv[1].isdigit():
             port = int(sys.argv[1])
         run_server(port)
