@@ -378,3 +378,4 @@ DEFAULT_CURRENCY=INR
 4. **Ephemeral Filesystem on Cloud Hosting**:
    * *Problem*: Files uploaded to disk on free cloud hosts (Render, Heroku) disappear whenever the server restarts or deploys.
    * *Fix*: Routed all uploaded images directly through Cloudinary CDN, persisting only secure HTTPS URLs in Supabase PostgreSQL.
+

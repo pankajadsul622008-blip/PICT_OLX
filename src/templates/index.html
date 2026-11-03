@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PICT Campus Marketplace | Study Material OLX</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="apple-touch-icon" href="/static/logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -15,9 +17,7 @@
   <header class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-md sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
       <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('browse')">
-        <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center font-bold text-blue-950 text-xl shadow">
-          P
-        </div>
+        <img src="/static/logo.png" alt="PICT Campus Marketplace Logo" class="w-10 h-10 object-contain rounded-xl bg-white/10 p-0.5 shadow-md border border-white/20">
         <div>
           <h1 class="text-xl font-bold tracking-tight">PICT Campus Marketplace</h1>
           <p class="text-xs text-blue-200">Seniors &rarr; Juniors P2P Study Material Hub (Powered by Sarvam AI)</p>
@@ -402,8 +402,12 @@
     </div>
   </div>
 
-  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
-    PICT Campus Marketplace &bull; Peer-to-Peer Study Hub &bull; Powered by Sarvam AI, Supabase & Cloudinary
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+    <div class="flex items-center justify-center gap-2 mb-1.5">
+      <img src="/static/logo.png" alt="PICT OLX" class="w-6 h-6 object-contain rounded-md inline-block">
+      <span class="font-bold text-slate-700 text-sm">PICT Campus Marketplace</span>
+    </div>
+    <p class="text-slate-400">Seniors &rarr; Juniors Peer-to-Peer Study Hub &bull; Powered by Sarvam AI, Supabase &amp; Cloudinary</p>
   </footer>
 
   <script>

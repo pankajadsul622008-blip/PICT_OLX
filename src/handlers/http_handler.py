@@ -95,6 +95,19 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send_json({"error": str(e)}, status=500)
 
+        # Favicon direct route
+        elif self.path == "/favicon.ico":
+            fav = STATIC_DIR / "favicon.png"
+            if fav.exists():
+                content = fav.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+            else:
+                self.send_error(404)
+
         # Serve static assets from /static/
         elif self.path.startswith("/static/"):
             rel_path = self.path[len("/static/"):]
