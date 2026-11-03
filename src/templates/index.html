@@ -1270,6 +1270,15 @@ Is this still available to collect on campus?`;
     loadConfig();
     checkAuth();
     fetchListings();
+
+    // Deep linking support for tabs and modals
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'list' || window.location.hash === '#list') {
+      switchTab('list');
+    }
+    if (urlParams.get('modal') === 'admin' || window.location.hash === '#admin') {
+      openAuthModal();
+    }
   </script>
 </body>
 
