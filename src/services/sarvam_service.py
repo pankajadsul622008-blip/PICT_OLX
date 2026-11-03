@@ -1,29 +1,39 @@
 import os
 import json
 from sarvamai import SarvamAI
-from ..config import SARVAM_API_KEY
+from ..config import (
+    SARVAM_API_KEY,
+    SARVAM_VISION_MODEL,
+    SARVAM_CHAT_MODEL,
+    COLLEGE_NAME,
+    COLLEGE_FULL_NAME,
+    UNIVERSITY_NAME,
+)
 
 def get_sarvam_client() -> SarvamAI:
     key = os.environ.get("SARVAM_API_KEY") or SARVAM_API_KEY
-    if not key:
-        raise ValueError("SARVAM_API_KEY is not set. Please add it to your .env file or environment.")
+    if not key or key == "your_sarvam_api_key_here":
+        raise ValueError(
+            "SARVAM_API_KEY is not configured. Please add your valid API key in the .env file."
+        )
     return SarvamAI(api_subscription_key=key)
 
-def analyze_study_material_image(data_uri: str, model: str = "gemma4") -> dict:
+def analyze_study_material_image(data_uri: str, model: str = None) -> dict:
     """
-    Sends study material image to Sarvam AI Vision and extracts SPPU/PICT metadata.
+    Sends study material image to Sarvam AI Vision and extracts syllabus metadata.
     """
+    vision_model = model or SARVAM_VISION_MODEL
     client = get_sarvam_client()
     system_prompt = (
-        "You are an AI assistant for a college study material marketplace at PICT "
-        "(Pune Institute of Computer Technology, affiliated with SPPU - Pune University). "
+        f"You are an AI assistant for a college study material marketplace at {COLLEGE_NAME} "
+        f"({COLLEGE_FULL_NAME}, affiliated with {UNIVERSITY_NAME}). "
         "A senior student is listing used study material (textbook, handwritten notes, "
         "PYQ question booklet, lab manual, engineering drafter/kit).\n"
         "Analyze the provided image and extract accurate details.\n"
         "Return ONLY a valid JSON object with the following keys:\n"
         "{\n"
         '  "title": "Clean, descriptive title for the listing",\n'
-        '  "subject": "Subject name according to SPPU curriculum (e.g. Data Structures, OS, CN, TOC, EM-3)",\n'
+        f'  "subject": "Subject name according to {UNIVERSITY_NAME} curriculum (e.g. Data Structures, OS, CN, TOC, EM-3)",\n'
         '  "department": "One of: Computer Engineering, Information Technology, E&TC, AIDS, First Year (FE), General",\n'
         '  "target_year": "One of: FE, SE, TE, BE",\n'
         '  "semester": "Semester 1 through 8",\n'
@@ -39,7 +49,7 @@ def analyze_study_material_image(data_uri: str, model: str = "gemma4") -> dict:
     )
     
     response = client.chat.completions_v2(
-        model=model,
+        model=vision_model,
         messages=[
             {
                 "role": "user",
@@ -63,12 +73,11 @@ def analyze_study_material_image(data_uri: str, model: str = "gemma4") -> dict:
     return json.loads(content)
 
 def test_connection():
-    """Verifies connection to Sarvam AI API."""
+    """Verifies connection to Sarvam AI API using configured chat model."""
     client = get_sarvam_client()
-    print("Testing connection with sarvam-105b-conversations...")
+    print(f"Testing connection with {SARVAM_CHAT_MODEL}...")
     res = client.chat.completions(
-        model="sarvam-105b-conversations",
+        model=SARVAM_CHAT_MODEL,
         messages=[{"role": "user", "content": "Hello!"}]
     )
     print("Response:", res.choices[0].message.content)
-

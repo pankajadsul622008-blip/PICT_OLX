@@ -3,12 +3,20 @@ import mimetypes
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler
 
-from ..config import TEMPLATES_DIR, STATIC_DIR
+from ..config import (
+    TEMPLATES_DIR,
+    STATIC_DIR,
+    COLLEGE_NAME,
+    COLLEGE_FULL_NAME,
+    UNIVERSITY_NAME,
+    WHATSAPP_DEFAULT_COUNTRY_CODE,
+    DEFAULT_CURRENCY,
+)
 from ..database import get_all_listings, create_listing
 from ..services.sarvam_service import analyze_study_material_image
 
 class MarketplaceHandler(BaseHTTPRequestHandler):
-    """Handles HTTP requests for PICT Campus Marketplace."""
+    """Handles HTTP requests for Campus Marketplace."""
 
     def _send_json(self, data, status=200):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
@@ -41,6 +49,16 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
                 self.wfile.write(content)
             else:
                 self.send_error(500, "Template index.html not found")
+
+        # API: Public config for frontend
+        elif self.path == "/api/config":
+            self._send_json({
+                "college_name": COLLEGE_NAME,
+                "college_full_name": COLLEGE_FULL_NAME,
+                "university_name": UNIVERSITY_NAME,
+                "country_code": WHATSAPP_DEFAULT_COUNTRY_CODE,
+                "currency": DEFAULT_CURRENCY,
+            })
 
         # API: Get all listings
         elif self.path == "/api/listings":
@@ -99,4 +117,3 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
                 self._send_json({"error": str(e)}, status=500)
         else:
             self.send_error(404, "Not Found")
-

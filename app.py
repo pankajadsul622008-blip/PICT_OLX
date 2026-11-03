@@ -1,11 +1,11 @@
 """
-PICT Campus Marketplace (OLX for PICT)
---------------------------------------
-A study material marketplace for PICT students.
-Powered by Sarvam AI Vision (gemma4).
+PICT Campus Marketplace
+-----------------------
+A study material marketplace for college students.
+Powered by Sarvam AI Vision.
 
 Usage:
-  python app.py                   # Starts the web app at http://localhost:8000/
+  python app.py                   # Starts the web application
   python app.py --test            # Verifies connection to Sarvam AI API
   python app.py --cli <img_path>  # Scans an image and outputs structured JSON
 """
@@ -18,15 +18,15 @@ import mimetypes
 from pathlib import Path
 from http.server import HTTPServer
 
-from src.config import PORT, STATIC_DIR
+from src.config import HOST, PORT, COLLEGE_NAME
 from src.database import init_db
 from src.handlers.http_handler import MarketplaceHandler
 from src.services.sarvam_service import analyze_study_material_image, test_connection
 
-def run_server(port: int = PORT):
+def run_server(host: str = HOST, port: int = PORT):
     """Starts the HTTP server and prints accessible URLs."""
     init_db()
-    server_address = ("0.0.0.0", port)
+    server_address = (host, port)
     httpd = HTTPServer(server_address, MarketplaceHandler)
     
     local_ips = []
@@ -35,7 +35,7 @@ def run_server(port: int = PORT):
     except Exception:
         pass
 
-    print(f"PICT Marketplace running at:")
+    print(f"{COLLEGE_NAME} Marketplace running at:")
     print(f"  - Local:   http://localhost:{port}/")
     for ip in local_ips:
         if not ip.startswith("127."):
@@ -71,4 +71,4 @@ if __name__ == "__main__":
         port = PORT
         if len(sys.argv) > 1 and sys.argv[1].isdigit():
             port = int(sys.argv[1])
-        run_server(port)
+        run_server(HOST, port)
